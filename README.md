@@ -105,6 +105,13 @@ Optionally, indicate an initial/tentative list of assumptions that you are doing
 -->
 
 ### Elevator Pitch
+
+We've all been there — standing in a supermarket aisle, flipping a product over, trying to make sense of an ingredient list full of words we can't pronounce. It takes time, requires knowledge most of us don't have, and we usually just give up and buy it anyway.
+Our app changes that. You scan the barcode, and almost instantly you get a green, yellow, or red verdict — no nutrition degree required. And if something is flagged, you can tap it and read exactly why it's harmful, in plain language.
+It's faster than reading the label, smarter than guessing, and designed for anyone who wants to make better food choices without it feeling like homework.
+If you care about what goes into your body — or know someone who does — NutriCode is the app for you.
+
+
 <!-- 
 Draft a small text to help you quickly introduce and describe your product in a short time (lift travel time ~90 seconds) and a few words (~800 characters), a technique usually known as elevator pitch.
 
