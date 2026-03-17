@@ -220,10 +220,73 @@ Scenario: Explanation data unavailable
 
 ### US05 - Allergen Filter
 As a user with food allergies, I want to configure my personal allergens so that the app alerts me whenever a scanned product contains them.
-- *Value:* Should Have | *Effort:* 5
+
+*Acceptance Tests:*
+
+Scenario: Allergen match detected on scan
+
+ Given the user has configured 'Milk' as a personal allergen
+ When the user scans a product containing milk
+ Then a red alert banner is shown immediately with the allergen name highlighted
+ And a 'See Alternatives' button appears
+
+ Given the user has set 'Soy' as a personal allergen
+ And the user scans a product containing soy lecithin
+ When the scan result loads
+ Then a 'See Alternatives' button appears below the alert banner
+
+ Given the user has set 'Eggs' and 'Nuts' as personal allergens
+ And the user scans a product containing eggs
+ When the scan result loads
+ Then only the matching allergen 'Eggs' is highlighted in the alert
+ 
+Scenario: Product has no allergen data
+
+ Given the user has allergens configured and scans a product with no allergen data
+ When the scan result loads
+ Then a yellow warning is shown: 'Allergen data unavailable — check the physical label'
+ And no green 'safe' banner is shown
+
+ Given the user has set 'Celery' as a personal allergen
+ And the user scans a recently added artisanal soup with no allergen mapping
+ When the scan result loads
+ Then no green 'safe' banner is displayed anywhere on the result screen
+
+ 
+- *Value:* Should Have | *Effort:* 8
 
 ### US06 - Scan History
 As a returning user, I want to access a history of previously scanned products so that I can re-consult them without scanning again.
+
+Scenario: User opens history with previous scans
+
+ Given the user has previously scanned at least one product
+ When the user opens the History screen
+ Then a list of previously scanned products is shown, ordered by most recent first
+
+ Given the user scanned 50 different products over the last month
+ And the user opens the app after a week without scanning
+ When the user opens the History screen
+ Then all 50 products are listed with their name, thumbnail and scan date
+
+Scenario: History is empty
+
+ Given the user has no scan history
+ When the user opens the History screen
+ Then an empty state is shown with a message and a 'Scan Now' button
+
+ Given the user has no scan history
+ And the user lands on the History screen for the first time
+ When the user taps the 'Scan Now' button
+ Then the app navigates directly to the scan screen
+
+
+ Given the user has no scan history
+ And the user has just switched to a new device and restored the app
+ When the user opens the History screen
+ Then the empty state is shown with no leftover data from the previous device
+
+ 
 - *Value:* Should Have | *Effort:* 3
 
 ### US07 - Search by Product Name
