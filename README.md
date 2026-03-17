@@ -159,7 +159,9 @@ As a health-conscious user, I want to see harmful ingredients highlighted so tha
 As a busy student, I want to see an immediate green/yellow/red verdict after scanning so that I can make a purchase decision in under 3 seconds.
 
 *Acceptance Tests:*
+
 Scenario: Successful scan with green verdict
+
   Given the product only has safe ingredients 
   When the scan is completed 
   Then A green circle and a text message saying “All ingredients are safe” are displayed. 
@@ -169,6 +171,7 @@ Scenario: Successful scan with green verdict
   Then the app navigates to the ingredient list without error.
 
 Scenario: Product barcode not found in database
+
   Given a scanned barcode has no match in the database 
   When the lookup completes 
   Then a brown circle and a text message saying “Product Not Found” are displayed along with the barcode number.
@@ -187,7 +190,9 @@ Scenario: Product barcode not found in database
 As a curious user, I want to tap on a flagged ingredient and read why it is harmful so that I can understand what I am putting in my body.
 
 *Acceptance Tests:*
+
 Scenario: User taps red-flagged ingredient and reads explanation
+
   Given a red-flagged ingredient is shown
   When the user taps it 
   Then a description panel appears containing the ingredient name and the stored explanation
@@ -197,6 +202,7 @@ Scenario: User taps red-flagged ingredient and reads explanation
   Then the panel closes and the ingredient list is fully visible again.
 
 Scenario: Explanation data unavailable
+
   Given a red-flagged ingredient is shown whose explanation is not in the database, 
   When the user taps it 
   Then a description panel appears containing a message saying the explanation is not available and a button to search about it online.
