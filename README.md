@@ -158,15 +158,15 @@ As a health-conscious user, I want to see harmful ingredients highlighted so tha
 
 Scenario: Harmful Ingredients Present and Highlighted
 
-Given the user is viewing a product's ingredient details 
-When the product contains one or more flagged harmful ingredients 
-Then those ingredients are highlighted (e.g. in red or with a warning icon), and a brief explanation of why each is flagged is displayed.
+Given the user is viewing a product's ingredient details, 
+when the product contains one or more flagged harmful ingredients,
+then those ingredients are highlighted (e.g. in red or with a warning icon), and a brief explanation of why each is flagged is displayed.
 
 Scenario: No Harmful Ingredients Found
 
-Given the user is viewing a product's ingredient details
-When none of the ingredients are flagged as harmful 
-Then the app displays a "No harmful ingredients detected" message so the user can shop with confidence.
+Given the user is viewing a product's ingredient details,
+when none of the ingredients are flagged as harmful,
+then the app displays a "No harmful ingredients detected" message so the user can shop with confidence.
 
 - *Value:* Must Have | *Effort:* 20
 
