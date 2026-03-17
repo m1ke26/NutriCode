@@ -174,10 +174,28 @@ As a returning user, I want to access a history of previously scanned products s
 
 ### US07 - Search by Product Name
 As a user with a damaged barcode, I want to search for a product by name so that I can still access its ingredient information.
+
+*Acceptance Tests:*
+Scenario: Successful Search and View Ingredients.
+Description: User enters a product name, selects from results, and views ingredients.
+Acceptance Tests: Given the user is on the search screen, when they enter "Coca-Cola" in the search bar and submit, then a list of matching products appears, and selecting one displays its ingredient details.
+
+Exceptional Scenario: No Results Found
+Description: User searches for a non-existent or misspelled product name, receiving a helpful error message with suggestions like scan bar-code.
+Given the user is on the search screen, when they enter "Koka-kola" (misspelled) and submit, Then a "No results found" message displays, and no ingredient details load.
 - *Value:* Could Have | *Effort:* 5
 
 ### US08 - Save Favourite Products
 As a regular shopper, I want to save trusted products to a favourites list so that I can quickly confirm they are still safe on future trips.
+
+*Acceptance Tests*
+Scenario: Add and View Favorite.
+Description: From a product detail page, user adds to favorites; later accesses the list to view saved items.
+Acceptance Tests: Given the user is viewing a product detail, when they tap "Add to Favorites," Then the product appears in the favorites list, and tapping it shows updated ingredient info.
+
+Exceptional Scenario: Remove Favorite or Offline Access
+Description: User removes an item from favorites; or accesses list offline, seeing cached data with a warning for potential updates.
+Acceptance Tests: Given the user has favorites saved and is offline, when they open the favorites list, then cached products appear.
 - *Value:* Could Have | *Effort:* 2
 <!-- 
 In this section, you should describe all kinds of requirements for your module: functional and non-functional requirements.
