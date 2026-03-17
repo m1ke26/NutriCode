@@ -224,6 +224,7 @@ As a returning user, I want to access a history of previously scanned products s
 As a user with a damaged barcode, I want to search for a product by name so that I can still access its ingredient information.
 
 *Acceptance Tests:*
+
 Scenario: Successful Search and View Ingredients.
 Description: User enters a product name, selects from results, and views ingredients.
 Acceptance Tests: Given the user is on the search screen, when they enter "Coca-Cola" in the search bar and submit, then a list of matching products appears, and selecting one displays its ingredient details.
@@ -236,7 +237,8 @@ Given the user is on the search screen, when they enter "Koka-kola" (misspelled)
 ### US08 - Save Favourite Products
 As a regular shopper, I want to save trusted products to a favourites list so that I can quickly confirm they are still safe on future trips.
 
-*Acceptance Tests*
+*Acceptance Tests:*
+
 Scenario: Add and View Favorite.
 Description: From a product detail page, user adds to favorites; later accesses the list to view saved items.
 Acceptance Tests: Given the user is viewing a product detail, when they tap "Add to Favorites," Then the product appears in the favorites list, and tapping it shows updated ingredient info.
