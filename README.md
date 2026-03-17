@@ -136,7 +136,6 @@ without having to read the small print on the label manually.
 </p>
 
 *Acceptance Tests:*
-gherkin
 Scenario: Successful barcode scan
   Given the user has the app open on the scan screen
   And the user points the camera at a valid product barcode
@@ -150,19 +149,68 @@ Scenario: Product not found in database
   And suggests the user search by product name instead
 
 
-*Value:* 40 | *Effort:* no idea
+*Value:* Must Have | *Effort:* no idea
 
 ### US02 - View Harmful Ingredients
 As a health-conscious user, I want to see harmful ingredients highlighted so that I can decide whether to buy the product.
-- *Value:* 40 | *Effort:* 20
+- *Value:* Must Have | *Effort:* 20
 
 ### US03 - Traffic Light Verdict
 As a busy student, I want to see an immediate green/yellow/red verdict after scanning so that I can make a purchase decision in under 3 seconds.
-- *Value:*  | *Effort:* 5
+
+*Acceptance Tests:*
+Scenario: Successful scan with green verdict
+  Given the product only has safe ingredients 
+  When the scan is completed 
+  Then A green circle and a text message saying “All ingredients are safe” are displayed. 
+
+  Given a green verdict
+  When the user taps “View Details” 
+  Then the app navigates to the ingredient list without error.
+
+Scenario: Product barcode not found in database
+  Given a scanned barcode has no match in the database 
+  When the lookup completes 
+  Then a brown circle and a text message saying “Product Not Found” are displayed along with the barcode number.
+
+  Given the Product Not Found is shown
+  When the user taps “Search the Internet” 
+  Then the default web browser opens and automatically searches for the barcode number also displayed.
+
+  Given the Product Not Found is shown
+  When the user taps “Scan again” 
+  Then the camera reopens and previous scan is dismissed.
+
+- *Value:* Must Have | *Effort:* 13
 
 ### US04 - Ingredient Details
 As a curious user, I want to tap on a flagged ingredient and read why it is harmful so that I can understand what I am putting in my body.
-- *Value:* Should Have | *Effort:* 3
+
+*Acceptance Tests:*
+Scenario: User taps red-flagged ingredient and reads explanation
+  Given a red-flagged ingredient is shown
+  When the user taps it 
+  Then a description panel appears containing the ingredient name and the stored explanation
+
+  Given the description panel is open 
+  When the user taps outside of it 
+  Then the panel closes and the ingredient list is fully visible again.
+
+Scenario: Explanation data unavailable
+  Given a red-flagged ingredient is shown whose explanation is not in the database, 
+  When the user taps it 
+  Then a description panel appears containing a message saying the explanation is not available and a button to search about it online.
+
+  Given a message saying the explanation is unavailable 
+  When the user taps the “Search online” button 
+  Then the device browser opens with a search query pre-filled with the ingredient name
+
+  Given the description panel saying the content is unavailable
+  When the user taps outside of it 
+  Then the ingredient list is fully shown again.
+
+  
+- *Value:* Should Have | *Effort:* 13
 
 ### US05 - Allergen Filter
 As a user with food allergies, I want to configure my personal allergens so that the app alerts me whenever a scanned product contains them.
