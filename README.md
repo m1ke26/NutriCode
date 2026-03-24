@@ -275,6 +275,11 @@ At the end, it is good to add a rough indication of the value of the user story 
 
 ### Domain model
 
+
+<p align="center" justify="center">
+  <img src="domain_model_uml.png" height = 200 width/>
+</p>
+
 <!-- 
 To better understand the context of the software system, it is useful to have a simple UML class diagram with all and only the key concepts (names, attributes) and relationships involved of the problem domain addressed by your app. 
 Also provide a short textual description of each concept (domain class). 
@@ -287,6 +292,8 @@ Example:
 
 
 ## Architecture and Design
+
+The logical architecture of NutriCode is organized into distinct packages that separate the mobile application's internal concerns from its external dependencies. This structure ensures a clean separation of concerns, making the codebase easier to maintain, test, and scale.
 <!--
 The architecture of a software system encompasses the set of key decisions about its organization. 
 
@@ -299,6 +306,24 @@ In this section you should start by briefly describing the components of the pro
 
 
 ### Logical architecture
+
+The logical architecture of NutriCode is organized into distinct packages that separate the mobile application's internal concerns from its external dependencies. This structure ensures a clean separation of concerns, making the codebase easier to maintain, test, and scale.
+
+The system is encapsulated within a main `Logical View`, which is divided into two primary subsystems: `app` and `External Systems`.
+
+#### 1. App
+This subsystem contains the core layers of the mobile application itself:
+* **User Interface:** Manages the presentation layer, including all screens, UI widgets, and navigation logic. It depends directly on the Business Logic layer to trigger actions.
+* **Business Logic:** Acts as the brain of the app. It handles the core domain operations, such as triggering a scan, applying allergen filters, and calculating the final traffic-light verdict. 
+* **Data Access:** Responsible for abstracting data retrieval and storage. It uses repositories to fetch data from external sources or local caches, ensuring the Business Logic layer doesn't need to know where the data comes from.
+
+#### 2. External Systems
+This subsystem represents the boundaries outside the core application code:
+* **Open Food Facts API:** An external REST API that the Business Logic layer relies on to fetch raw product and ingredient data based on the scanned barcodes.
+* **Local Database:** The device's local storage (e.g., SQLite), which the Data Access layer depends on to persist user-specific data like scan history and configured allergens.
+
+![LogicalView](logical_view.png)
+
 <!--
 The purpose of this subsection is to document the high-level logical structure of the code (Logical View), using a UML diagram with logical packages, without the worry of allocating to components, processes or machines.
 
@@ -311,6 +336,25 @@ Example of _UML package diagram_ showing a _logical view_ of the Eletronic Ticke
 
 
 ### Physical architecture
+
+The physical architecture of NutriCode follows a standard client-server deployment model, consisting of a mobile client device and an external data server. This section outlines the physical nodes, the software components deployed on them, and the rationale behind our technological choices.
+
+**1. Mobile Device (Client Node)**
+This is the user's physical smartphone (Android or iOS). It hosts the core executable artifacts of our system:
+* **App (Flutter):** The main application containing both the User Interface and the Business Logic. 
+  * *Justification:* We chose **Flutter** (and the Dart language) because it allows us to build natively compiled applications for both mobile platforms from a single codebase, significantly speeding up development time. It also has excellent, highly responsive plugins for hardware access (like the device camera for barcode scanning).
+* **Local Storage:** The local database residing on the device's storage.
+  * *Justification:* We are utilizing **SQLite** (and Shared Preferences) to persist user data, such as their configured allergen filters, scan history, and favorite products. This ensures that users can access their saved data even when offline and reduces unnecessary network requests.
+
+**2. Open Food Facts Server (External Node)**
+This represents the remote cloud infrastructure that hosts the product database.
+* **Open Food Facts API:** A RESTful web service.
+  * *Justification:* Instead of building and maintaining our own proprietary database of millions of food products, we chose to integrate with the **Open Food Facts API**. It is a comprehensive, open-source, and crowdsourced database that provides all the nutritional and ingredient data we need based on standard EAN/UPC barcodes.
+
+**Connections**
+The Mobile Device communicates with the Open Food Facts Server over the internet via standard **HTTPS** protocols. The app sends an HTTP GET request containing the scanned barcode string, and the server responds with a JSON payload containing the product's ingredient details, which the app then parses and evaluates.
+
+![DeploymentView](physical_view.png)
 <!--
 The goal of this subsection is to document the high-level physical structure of the software system (machines, connections, software components installed, and their dependencies) using UML deployment diagrams (Deployment View) or component diagrams (Implementation View), separate or integrated, showing the physical structure of the system.
 
