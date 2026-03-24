@@ -149,17 +149,34 @@ Scenario: Product not found in database
   And suggests the user search by product name instead
 
 
-*Value:* Must Have | *Effort:* no idea
+*Value:* Must Have | *Effort:* 10
 
 ### US02 - View Harmful Ingredients
 As a health-conscious user, I want to see harmful ingredients highlighted so that I can decide whether to buy the product.
+
+*Acceptance Tests*:
+
+Scenario: Harmful Ingredients Present and Highlighted
+
+Given the user is viewing a product's ingredient details, 
+when the product contains one or more flagged harmful ingredients,
+then those ingredients are highlighted (e.g. in red or with a warning icon), and a brief explanation of why each is flagged is displayed.
+
+Scenario: No Harmful Ingredients Found
+
+Given the user is viewing a product's ingredient details,
+when none of the ingredients are flagged as harmful,
+then the app displays a "No harmful ingredients detected" message so the user can shop with confidence.
+
 - *Value:* Must Have | *Effort:* 20
 
 ### US03 - Traffic Light Verdict
 As a busy student, I want to see an immediate green/yellow/red verdict after scanning so that I can make a purchase decision in under 3 seconds.
 
 *Acceptance Tests:*
+
 Scenario: Successful scan with green verdict
+
   Given the product only has safe ingredients 
   When the scan is completed 
   Then A green circle and a text message saying “All ingredients are safe” are displayed. 
@@ -169,6 +186,7 @@ Scenario: Successful scan with green verdict
   Then the app navigates to the ingredient list without error.
 
 Scenario: Product barcode not found in database
+
   Given a scanned barcode has no match in the database 
   When the lookup completes 
   Then a brown circle and a text message saying “Product Not Found” are displayed along with the barcode number.
@@ -187,7 +205,9 @@ Scenario: Product barcode not found in database
 As a curious user, I want to tap on a flagged ingredient and read why it is harmful so that I can understand what I am putting in my body.
 
 *Acceptance Tests:*
+
 Scenario: User taps red-flagged ingredient and reads explanation
+
   Given a red-flagged ingredient is shown
   When the user taps it 
   Then a description panel appears containing the ingredient name and the stored explanation
@@ -197,6 +217,7 @@ Scenario: User taps red-flagged ingredient and reads explanation
   Then the panel closes and the ingredient list is fully visible again.
 
 Scenario: Explanation data unavailable
+
   Given a red-flagged ingredient is shown whose explanation is not in the database, 
   When the user taps it 
   Then a description panel appears containing a message saying the explanation is not available and a button to search about it online.
@@ -214,16 +235,80 @@ Scenario: Explanation data unavailable
 
 ### US05 - Allergen Filter
 As a user with food allergies, I want to configure my personal allergens so that the app alerts me whenever a scanned product contains them.
-- *Value:* Should Have | *Effort:* 5
+
+*Acceptance Tests:*
+
+Scenario: Allergen match detected on scan
+
+ Given the user has configured 'Milk' as a personal allergen
+ When the user scans a product containing milk
+ Then a red alert banner is shown immediately with the allergen name highlighted
+ And a 'See Alternatives' button appears
+
+ Given the user has set 'Soy' as a personal allergen
+ And the user scans a product containing soy lecithin
+ When the scan result loads
+ Then a 'See Alternatives' button appears below the alert banner
+
+ Given the user has set 'Eggs' and 'Nuts' as personal allergens
+ And the user scans a product containing eggs
+ When the scan result loads
+ Then only the matching allergen 'Eggs' is highlighted in the alert
+ 
+Scenario: Product has no allergen data
+
+ Given the user has allergens configured and scans a product with no allergen data
+ When the scan result loads
+ Then a yellow warning is shown: 'Allergen data unavailable — check the physical label'
+ And no green 'safe' banner is shown
+
+ Given the user has set 'Celery' as a personal allergen
+ And the user scans a recently added artisanal soup with no allergen mapping
+ When the scan result loads
+ Then no green 'safe' banner is displayed anywhere on the result screen
+
+ 
+- *Value:* Should Have | *Effort:* 8
 
 ### US06 - Scan History
 As a returning user, I want to access a history of previously scanned products so that I can re-consult them without scanning again.
+
+Scenario: User opens history with previous scans
+
+ Given the user has previously scanned at least one product
+ When the user opens the History screen
+ Then a list of previously scanned products is shown, ordered by most recent first
+
+ Given the user scanned 50 different products over the last month
+ And the user opens the app after a week without scanning
+ When the user opens the History screen
+ Then all 50 products are listed with their name, thumbnail and scan date
+
+Scenario: History is empty
+
+ Given the user has no scan history
+ When the user opens the History screen
+ Then an empty state is shown with a message and a 'Scan Now' button
+
+ Given the user has no scan history
+ And the user lands on the History screen for the first time
+ When the user taps the 'Scan Now' button
+ Then the app navigates directly to the scan screen
+
+
+ Given the user has no scan history
+ And the user has just switched to a new device and restored the app
+ When the user opens the History screen
+ Then the empty state is shown with no leftover data from the previous device
+
+ 
 - *Value:* Should Have | *Effort:* 3
 
 ### US07 - Search by Product Name
 As a user with a damaged barcode, I want to search for a product by name so that I can still access its ingredient information.
 
 *Acceptance Tests:*
+
 Scenario: Successful Search and View Ingredients.
 Description: User enters a product name, selects from results, and views ingredients.
 Acceptance Tests: Given the user is on the search screen, when they enter "Coca-Cola" in the search bar and submit, then a list of matching products appears, and selecting one displays its ingredient details.
@@ -236,7 +321,8 @@ Given the user is on the search screen, when they enter "Koka-kola" (misspelled)
 ### US08 - Save Favourite Products
 As a regular shopper, I want to save trusted products to a favourites list so that I can quickly confirm they are still safe on future trips.
 
-*Acceptance Tests*
+*Acceptance Tests:*
+
 Scenario: Add and View Favorite.
 Description: From a product detail page, user adds to favorites; later accesses the list to view saved items.
 Acceptance Tests: Given the user is viewing a product detail, when they tap "Add to Favorites," Then the product appears in the favorites list, and tapping it shows updated ingredient info.
