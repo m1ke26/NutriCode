@@ -361,6 +361,49 @@ At the end, it is good to add a rough indication of the value of the user story 
 
 ### Domain model
 
+
+    ``` Mermaid
+classDiagram
+    User "1" --> "*" Scan : performs
+    Scan "*" --> "1" Product : refers to
+    Product "1" --> "*" Ingredient : contains
+    Ingredient "1" --> "1" IngredientExplanation : has
+    Scan "1" --> "1" Verdict : generates
+
+    class User {
+        +String id
+        +String name
+        +String email
+        +List allergens
+    }
+
+    class Scan {
+        +String id
+        +DateTime date
+        +String barcode
+    }
+
+    class Product {
+        +String barcode
+        +String name
+        +String brand
+    }
+
+    class Ingredient {
+        +String name
+        +Boolean harmful
+    }
+
+    class IngredientExplanation {
+        +String description
+        +String riskLevel
+    }
+
+    class Verdict {
+        +String color
+        +Boolean hasAllergen
+    }
+
 <!-- 
 To better understand the context of the software system, it is useful to have a simple UML class diagram with all and only the key concepts (names, attributes) and relationships involved of the problem domain addressed by your app. 
 Also provide a short textual description of each concept (domain class). 
