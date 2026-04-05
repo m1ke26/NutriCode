@@ -453,13 +453,39 @@ Example of _UML deployment diagram_ showing a _deployment view_ of the Eletronic
 
 
 ### Vertical prototype
-<!--
-To help on validating all the architectural, design and technological decisions made, we usually implement a vertical prototype, a thin vertical slice of the system integrating as much technologies we can.
 
-In this subsection please describe which feature, or part of it, you have implemented, and how, together with a snapshot of the user interface, if applicable.
+In Iteration 0, we successfully implemented a vertical prototype, a thin end-to-end slice of the application that validates our technology stack and core architecture. Key achievements include:
 
-At this phase, instead of a complete user story, you can simply implement a small part of a feature that demonstrates thay you can use the technology, for example, show a screen with the app credits (name and authors).
--->
+- **Barcode Scanning:** Integrated the device camera using the `mobile_scanner` package, allowing the user to scan real product barcodes directly from the app.
+- **Manual Barcode Input:** Added a text field below the camera so users can manually enter a barcode number when scanning is not possible.
+- **Product Data Retrieval:** Connected the app to the [Open Food Facts API](https://world.openfoodfacts.org/) to fetch real product data (name, brand, image, ingredients, and allergens) based on the scanned barcode.
+- **Ingredient Analysis with Color Coding:** Ingredients are displayed with a traffic-light color system — harmful ingredients appear in **red**, moderate-concern ingredients in **yellow/orange**, and safe ingredients in **green**.
+- **User Authentication Screens:** Developed Login and Registration screens with a clean, modern dark-themed UI.
+- **Welcome Screen:** Created an initial welcome screen with a custom illustration and a "Get Started" button to guide users into the app.
+
+Some screenshots and demos:
+
+<p align="center">
+  <b>1. Welcome Screen</b>&emsp;&emsp;&emsp;
+  <b>2. Login</b>&emsp;&emsp;&emsp;
+  <b>3. Register</b>
+</p>
+<p align="center">
+  <img src="vertical_prorotype_images/welcome_screen.png" width="200">&emsp;
+  <img src="vertical_prorotype_images/login.png" width="200">&emsp;
+  <img src="vertical_prorotype_images/register.png" width="200">
+</p>
+
+<p align="center">
+  <b>4. Scanner</b>&emsp;&emsp;&emsp;
+  <b>5. Product Info</b>
+</p>
+<p align="center">
+  <img src="vertical_prorotype_images/scanner.png" width="200">&emsp;
+  <img src="vertical_prorotype_images/product_info.png" width="200">
+</p>
+
+**Note on Current Functionality:** Please be aware that in this iteration, some of the buttons and interactive elements within the app are not fully operational. These elements are part of our planned features and will be developed and integrated in subsequent iterations. The login and registration screens are visual-only at this stage (no authentication backend).
 
 ## Project management
 <!--
@@ -484,6 +510,26 @@ You can find below information and references related with the project managemen
 -->
 
 ### Sprint 0
+
+**Retrospective**
+
+- **Did well:**
+  - Effective team collaboration: All four members (José, Miguel, Vasco, Victor) worked together in a streamlined and productive manner, with clear communication throughout the iteration.
+  - Well-defined product vision: We aligned early on the app's core purpose and features, which allowed us to move quickly into user story writing and architectural decisions.
+  - Solid vertical prototype: We successfully delivered a working end-to-end slice of the app — from barcode scanning to ingredient analysis — validating our choice of Flutter and the Open Food Facts API.
+
+- **Do differently:**
+  - Task distribution: In future iterations, we plan to split tasks more explicitly across team members to enable parallel development and reduce bottlenecks.
+  - Earlier testing on physical devices: Most testing was done on emulators; we want to test on real Android devices earlier in the next sprint.
+
+- **Puzzles:**
+  - Firebase integration: We are still evaluating how to best integrate Firebase Authentication and Firestore for user accounts, scan history, and personalized allergen profiles.
+
+**Board at the End of Iteration 0**
+
+<p align="center">
+  <img src="iteration0_board.png" width="800">
+</p>
 
 ### Sprint 1
 
