@@ -1,6 +1,3 @@
-<!-- Template file for README.md for LEIC-ES-2023-24 -->
-
-> [!NOTE] In this file, you’ll find the structure you should follow to document your mobile app in the README.md file for LEIC-ES-2024-25. It’s a single file with guidelines. You can add more sections, but for assessment normalisation and automation, include all sections of this template. Your professors will clarify about specificities of your app.
 
 # _NutriCode_ Development Report
 
@@ -52,25 +49,6 @@ is a mobile app that instantly reveals harmful ingredients and allergens by scan
 Unlike manual label reading,
 our app gives a clear virtual verdict in x seconds.
 
-<!-- 
-Start by defining a clear and concise vision for your app, to help members of the team, contributors, and users into focusing their often disparate views into a concise, visual, and short textual form. 
-
-The vision should provide a "high concept" of the product for marketers, developers, and managers.
-
-A product vision describes the essential of the product and sets the direction to where a product is headed, and what the product will deliver in the future. 
-
-**We favor a catchy and concise statement, ideally one sentence.**
-
-We suggest you use the product vision template described in the following link:
-* [How To Create A Convincing Product Vision To Guide Your Team, by uxstudioteam.com](https://uxstudioteam.com/ux-blog/product-vision/)
-
-To learn more about how to write a good product vision, please see:
-* [Vision, by scrumbook.org](http://scrumbook.org/value-stream/vision.html)
-* [Product Management: Product Vision, by ProductPlan](https://www.productplan.com/glossary/product-vision/)
-* [How to write a vision, by dummies.com](https://www.dummies.com/business/marketing/branding/how-to-write-vision-and-mission-statements-for-your-brand/)
-* [20 Inspiring Vision Statement Examples (2019 Updated), by lifehack.org](https://www.lifehack.org/articles/work/20-sample-vision-statement-for-the-new-startup.html)
--->
-
 
 ### Features and Assumptions
 
@@ -95,14 +73,6 @@ Dependencies
 - Barcode scanning via camera API
 - Product Database
 
-<!-- 
-Indicate an  initial/tentative list of high-level features - high-level capabilities or desired services of the system that are necessary to deliver benefits to the users.
- - Feature XPTO - a few words to briefly describe the feature
- - Feature ABCD - ...
-...
-
-Optionally, indicate an initial/tentative list of assumptions that you are doing about the app and dependencies of the app to other systems.
--->
 
 ### Elevator Pitch
 
@@ -111,15 +81,6 @@ Our app changes that. You scan the barcode, and almost instantly you get a green
 It's faster than reading the label, smarter than guessing, and designed for anyone who wants to make better food choices without it feeling like homework.
 If you care about what goes into your body — or know someone who does — NutriCode is the app for you.
 
-
-<!-- 
-Draft a small text to help you quickly introduce and describe your product in a short time (lift travel time ~90 seconds) and a few words (~800 characters), a technique usually known as elevator pitch.
-
-Take a look at the following links to learn some techniques:
-* [Crafting an Elevator Pitch](https://www.mindtools.com/pages/article/elevator-pitch.htm)
-* [The Best Elevator Pitch Examples, Templates, and Tactics - A Guide to Writing an Unforgettable Elevator Speech, by strategypeak.com](https://strategypeak.com/elevator-pitch-examples/)
-* [Top 7 Killer Elevator Pitch Examples, by toggl.com](https://blog.toggl.com/elevator-pitch-examples/)
--->
 
 ## Requirements
 
@@ -136,13 +97,16 @@ without having to read the small print on the label manually.
 </p>
 
 *Acceptance Tests:*
+
 Scenario: Successful barcode scan
+
   Given the user has the app open on the scan screen
   And the user points the camera at a valid product barcode
   When the barcode is recognized
   Then the app displays the product name and ingredient analysis within 3 seconds
 
 Scenario: Product not found in database
+
   Given the user scans a valid barcode
   When the product is not found in the Open Food Facts database
   Then the app displays a "Product not found" message
@@ -331,33 +295,7 @@ Exceptional Scenario: Remove Favorite or Offline Access
 Description: User removes an item from favorites; or accesses list offline, seeing cached data with a warning for potential updates.
 Acceptance Tests: Given the user has favorites saved and is offline, when they open the favorites list, then cached products appear.
 - *Value:* Could Have | *Effort:* 2
-<!-- 
-In this section, you should describe all kinds of requirements for your module: functional and non-functional requirements.
 
-For LEIC-ES-2024-25, the requirements will be gathered and documented as user stories. 
-
-Please add in this section a concise summary of all the user stories.
-
-**User stories as GitHub Project Items**
-The user stories themselves should be created and described as items in your GitHub Project with the label "user story". 
-
-A user story is a description of a desired functionality told from the perspective of the user or customer. A starting template for the description of a user story is *As a < user role >, I want < goal > so that < reason >.*
-
-Name the item with either the full user story or a shorter name. In the “comments” field, add relevant notes, mockup images, and acceptance test scenarios, linking to the acceptance test in Gherkin when available, and finally estimate value and effort.
-
-**INVEST in good user stories**. 
-You may add more details after, but the shorter and complete, the better. In order to decide if the user story is good, please follow the [INVEST guidelines](https://xp123.com/articles/invest-in-good-stories-and-smart-tasks/).
-
-**User interface mockups**.
-After the user story text, you should add a draft of the corresponding user interfaces, a simple mockup or draft, if applicable.
-
-**Acceptance tests**.
-For each user story you should write also the acceptance tests (textually in [Gherkin](https://cucumber.io/docs/gherkin/reference/)), i.e., a description of scenarios (situations) that will help to confirm that the system satisfies the requirements addressed by the user story.
-
-**Value and effort**.
-At the end, it is good to add a rough indication of the value of the user story to the customers (e.g. [MoSCoW](https://en.wikipedia.org/wiki/MoSCoW_method) method) and the team should add an estimation of the effort to implement it, for example, using points in a kind-of-a Fibonnacci scale (1,2,3,5,8,13,20,40, no idea).
-
--->
 
 ### Domain model
 
@@ -366,29 +304,13 @@ At the end, it is good to add a rough indication of the value of the user story 
   <img src="domain_model_uml.png" height = 200 width/>
 </p>
 
-<!-- 
-To better understand the context of the software system, it is useful to have a simple UML class diagram with all and only the key concepts (names, attributes) and relationships involved of the problem domain addressed by your app. 
-Also provide a short textual description of each concept (domain class). 
 
-Example:
- <p align="center" justify="center">
-  <img src="https://github.com/FEUP-LEIC-ES-2022-23/templates/blob/main/images/DomainModel.png"/>
-</p>
--->
 
 
 ## Architecture and Design
 
 The logical architecture of NutriCode is organized into distinct packages that separate the mobile application's internal concerns from its external dependencies. This structure ensures a clean separation of concerns, making the codebase easier to maintain, test, and scale.
-<!--
-The architecture of a software system encompasses the set of key decisions about its organization. 
 
-A well written architecture document is brief and reduces the amount of time it takes new programmers to a project to understand the code to feel able to make modifications and enhancements.
-
-To document the architecture requires describing the decomposition of the system in their parts (high-level components) and the key behaviors and collaborations between them. 
-
-In this section you should start by briefly describing the components of the project and their interrelations. You should describe how you solved typical problems you may have encountered, pointing to well-known architectural and design patterns, if applicable.
--->
 
 
 ### Logical architecture
@@ -410,15 +332,6 @@ This subsystem represents the boundaries outside the core application code:
 
 ![LogicalView](logical_view.png)
 
-<!--
-The purpose of this subsection is to document the high-level logical structure of the code (Logical View), using a UML diagram with logical packages, without the worry of allocating to components, processes or machines.
-
-It can be beneficial to present the system in a horizontal decomposition, defining layers and implementation concepts, such as the user interface, business logic and concepts.
-
-Example of _UML package diagram_ showing a _logical view_ of the Eletronic Ticketing System (to be accompanied by a short description of each package):
-
-![LogicalView](https://user-images.githubusercontent.com/9655877/160585416-b1278ad7-18d7-463c-b8c6-afa4f7ac7639.png)
--->
 
 
 ### Physical architecture
@@ -441,15 +354,6 @@ This represents the remote cloud infrastructure that hosts the product database.
 The Mobile Device communicates with the Open Food Facts Server over the internet via standard **HTTPS** protocols. The app sends an HTTP GET request containing the scanned barcode string, and the server responds with a JSON payload containing the product's ingredient details, which the app then parses and evaluates.
 
 ![DeploymentView](physical_view.png)
-<!--
-The goal of this subsection is to document the high-level physical structure of the software system (machines, connections, software components installed, and their dependencies) using UML deployment diagrams (Deployment View) or component diagrams (Implementation View), separate or integrated, showing the physical structure of the system.
-
-It should describe also the technologies considered and justify the selections made. Examples of technologies relevant for ESOF are, for example, frameworks for mobile applications (such as Flutter).
-
-Example of _UML deployment diagram_ showing a _deployment view_ of the Eletronic Ticketing System (please notice that, instead of software components, one should represent their physical/executable manifestations for deployment, called artifacts in UML; the diagram should be accompanied by a short description of each node and artifact):
-
-![DeploymentView](https://user-images.githubusercontent.com/9655877/160592491-20e85af9-0758-4e1e-a704-0db1be3ee65d.png)
--->
 
 
 ### Vertical prototype
@@ -488,26 +392,7 @@ Some screenshots and demos:
 **Note on Current Functionality:** Please be aware that in this iteration, some of the buttons and interactive elements within the app are not fully operational. These elements are part of our planned features and will be developed and integrated in subsequent iterations. The login and registration screens are visual-only at this stage (no authentication backend).
 
 ## Project management
-<!--
-Software project management is the art and science of planning and leading software projects, in which software projects are planned, implemented, monitored and controlled.
 
-In the context of ESOF, we recommend each team to adopt a set of project management practices and tools capable of registering tasks, assigning tasks to team members, adding estimations to tasks, monitor tasks progress, and therefore being able to track their projects.
-
-Common practices of managing agile software development with Scrum are: backlog management, release management, estimation, Sprint planning, Sprint development, acceptance tests, and Sprint retrospectives.
-
-You can find below information and references related with the project management: 
-
-* Backlog management: Product backlog and Sprint backlog in a [Github Projects board](https://github.com/orgs/FEUP-LEIC-ES-2023-24/projects/64);
-* Release management: [v0](#), v1, v2, v3, ...;
-* Sprint planning and retrospectives: 
-  * plans: screenshots of Github Projects board at begin and end of each Sprint;
-  * retrospectives: meeting notes in a document in the repository, addressing the following questions:
-    * Did well: things we did well and should continue;
-    * Do differently: things we should do differently and how;
-    * Puzzles: things we don’t know yet if they are right or wrong… 
-    * list of a few improvements to implement next Sprint;
-
--->
 
 ### Sprint 0
 
