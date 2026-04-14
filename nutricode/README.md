@@ -1,4 +1,4 @@
-# nutri_code
+# nutricode_prototype
 
 A new Flutter project.
 

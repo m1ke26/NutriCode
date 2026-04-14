@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "nutri_code" "\0"
+            VALUE "CompanyName", "com.nutricode" "\0"
+            VALUE "FileDescription", "nutricode_prototype" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "nutri_code" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "nutri_code.exe" "\0"
-            VALUE "ProductName", "nutri_code" "\0"
+            VALUE "InternalName", "nutricode_prototype" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.nutricode. All rights reserved." "\0"
+            VALUE "OriginalFilename", "nutricode_prototype.exe" "\0"
+            VALUE "ProductName", "nutricode_prototype" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

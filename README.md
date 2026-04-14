@@ -93,7 +93,7 @@ without having to read the small print on the label manually.
 
 *Mockup:* 
 <p>
-  <img src="mockup_interface.png" alt="Mockup da App Eco Scan digitalizando um produto" width="400">
+  <img src="docs/mockup_interface.png" alt="Mockup da App Eco Scan digitalizando um produto" width="400">
 </p>
 
 *Acceptance Tests:*
@@ -301,7 +301,7 @@ Acceptance Tests: Given the user has favorites saved and is offline, when they o
 
 
 <p align="center" justify="center">
-  <img src="domain_model_uml.png" height = 200 width/>
+  <img src="docs/domain_model_uml.png" height = 200 width/>
 </p>
 
 
@@ -330,7 +330,7 @@ This subsystem represents the boundaries outside the core application code:
 * **Open Food Facts API:** An external REST API that the Business Logic layer relies on to fetch raw product and ingredient data based on the scanned barcodes.
 * **Local Database:** The device's local storage (e.g., SQLite), which the Data Access layer depends on to persist user-specific data like scan history and configured allergens.
 
-![LogicalView](logical_view.png)
+![LogicalView](docs/logical_view.png)
 
 
 
@@ -353,7 +353,7 @@ This represents the remote cloud infrastructure that hosts the product database.
 **Connections**
 The Mobile Device communicates with the Open Food Facts Server over the internet via standard **HTTPS** protocols. The app sends an HTTP GET request containing the scanned barcode string, and the server responds with a JSON payload containing the product's ingredient details, which the app then parses and evaluates.
 
-![DeploymentView](physical_view.png)
+![DeploymentView](docs/physical_view.png)
 
 
 ### Vertical prototype
@@ -375,9 +375,9 @@ Some screenshots and demos:
   <b>3. Register</b>
 </p>
 <p align="center">
-  <img src="vertical_prorotype_images/welcome_screen.png" width="200">&emsp;
-  <img src="vertical_prorotype_images/login.png" width="200">&emsp;
-  <img src="vertical_prorotype_images/register.png" width="200">
+  <img src="docs/vertical_prorotype_images/welcome_screen.png" width="200">&emsp;
+  <img src="docs/vertical_prorotype_images/login.png" width="200">&emsp;
+  <img src="docs/vertical_prorotype_images/register.png" width="200">
 </p>
 
 <p align="center">
@@ -385,8 +385,8 @@ Some screenshots and demos:
   <b>5. Product Info</b>
 </p>
 <p align="center">
-  <img src="vertical_prorotype_images/scanner.png" width="200">&emsp;
-  <img src="vertical_prorotype_images/product_info.png" width="200">
+  <img src="docs/vertical_prorotype_images/scanner.png" width="200">&emsp;
+  <img src="docs/vertical_prorotype_images/product_info.png" width="200">
 </p>
 
 **Note on Current Functionality:** Please be aware that in this iteration, some of the buttons and interactive elements within the app are not fully operational. These elements are part of our planned features and will be developed and integrated in subsequent iterations. The login and registration screens are visual-only at this stage (no authentication backend).
@@ -413,7 +413,7 @@ Some screenshots and demos:
 **Board at the End of Iteration 0**
 
 <p align="center">
-  <img src="iteration0_board.png" width="800">
+  <img src="docs/iteration0_board.png" width="800">
 </p>
 
 ### Sprint 1
