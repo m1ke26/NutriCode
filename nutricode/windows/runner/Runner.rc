@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.nutricode" "\0"
-            VALUE "FileDescription", "nutricode_prototype" "\0"
+            VALUE "FileDescription", "NutriCode" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "nutricode_prototype" "\0"
+            VALUE "InternalName", "NutriCode" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.nutricode. All rights reserved." "\0"
-            VALUE "OriginalFilename", "nutricode_prototype.exe" "\0"
-            VALUE "ProductName", "nutricode_prototype" "\0"
+            VALUE "OriginalFilename", "NutriCode.exe" "\0"
+            VALUE "ProductName", "NutriCode" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
