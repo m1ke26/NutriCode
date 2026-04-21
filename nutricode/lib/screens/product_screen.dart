@@ -1,89 +1,59 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/product_provider.dart';
 import '../services/open_food_facts_service.dart';
+import '../utils/ingredient_classifier.dart';
 
-// Harmful ingredients (red)
-const _badIngredients = {
-  'high fructose corn syrup', 'aspartame', 'acesulfame k', 'acesulfame',
-  'sodium nitrite', 'sodium nitrate', 'monosodium glutamate', 'msg',
-  'tartrazine', 'red 40', 'yellow 5', 'yellow 6', 'blue 1', 'red dye',
-  'trans fat', 'hydrogenated', 'partially hydrogenated',
-  'butylated hydroxyanisole', 'bha', 'butylated hydroxytoluene', 'bht',
-  'sodium benzoate', 'potassium benzoate', 'artificial sweetener',
-  'artificial flavour', 'artificial flavor', 'artificial colour',
-  'artificial color', 'propylene glycol', 'polysorbate 80',
-  'carrageenan', 'sodium phosphate', 'phosphoric acid',
-  'caramel colour', 'caramel color', 'e150d', 'e951', 'e950',
-  'e621', 'e211', 'e249', 'e250', 'e320', 'e321', 'e102',
-  'e129', 'e110', 'e133', 'e338', 'e452', 'e407',
-};
-
-// Moderate concern ingredients (yellow)
-const _moderateIngredients = {
-  'sugar', 'salt', 'sodium', 'palm oil', 'corn syrup', 'dextrose',
-  'maltodextrin', 'modified starch', 'corn starch', 'glucose syrup',
-  'fructose', 'sucrose', 'citric acid', 'malic acid',
-  'natural flavour', 'natural flavor', 'flavouring', 'flavoring',
-  'emulsifier', 'stabiliser', 'stabilizer', 'thickener',
-  'acidity regulator', 'anti-caking agent', 'preservative',
-  'sunflower oil', 'rapeseed oil', 'vegetable oil',
-  'e330', 'e322', 'e471', 'e300', 'e412', 'e415',
-  'lecithin', 'mono- and diglycerides',
-};
-
-class ProductScreen extends StatefulWidget {
+class ProductScreen extends StatelessWidget {
   final String barcode;
   const ProductScreen({super.key, required this.barcode});
 
   @override
-  State<ProductScreen> createState() => _ProductScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => ProductProvider()..fetchProduct(barcode),
+      child: const _ProductScreenContent(),
+    );
+  }
 }
 
-class _ProductScreenState extends State<ProductScreen> {
-  late Future<ProductResult> _future;
+class _ProductScreenContent extends StatelessWidget {
+  const _ProductScreenContent();
 
-  @override
-  void initState() {
-    super.initState();
-    _future = OpenFoodFactsService.fetchProduct(widget.barcode);
-  }
 
-  Color _getIngredientColor(String ingredient) {
-    final lower = ingredient.toLowerCase().trim();
-    for (final bad in _badIngredients) {
-      if (lower.contains(bad)) return Colors.red;
-    }
-    for (final mod in _moderateIngredients) {
-      if (lower.contains(mod)) return Colors.orange;
-    }
-    return Colors.green;
-  }
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ProductProvider>();
+
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text('Product Info')),
-      body: FutureBuilder<ProductResult>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return _buildError('Network error: ${snapshot.error}');
-          }
-
-          final product = snapshot.data!;
-          if (!product.found) {
-            return _buildError(
-                'Product not found for barcode:\n${widget.barcode}');
-          }
-
-          return _buildProductInfo(product);
-        },
-      ),
+      appBar: AppBar(title: const Text('NutriCode: Scan')),
+      body: _buildBody(context, provider),
     );
+  }
+
+  Widget _buildBody(BuildContext context, ProductProvider provider) {
+    switch (provider.state) {
+      case ProductState.initial:
+      case ProductState.loading:
+        return const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(color: Color(0xFF1B998B)),
+              SizedBox(height: 16),
+              Text('A analisar embalagem... 🔍', style: TextStyle(fontSize: 16, color: Colors.blueGrey)),
+            ],
+          ),
+        );
+      case ProductState.error:
+        return _buildError(provider.errorMessage ?? 'Erro desconhecido');
+      case ProductState.notFound:
+        return _buildNotFound(context);
+      case ProductState.success:
+        return _buildProductInfo(context, provider.product!);
+    }
   }
 
   Widget _buildError(String message) {
@@ -93,141 +63,171 @@ class _ProductScreenState extends State<ProductScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const Icon(Icons.wifi_off, size: 64, color: Colors.redAccent),
             const SizedBox(height: 16),
-            Text(message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16)),
+            Text(message, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, height: 1.5)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProductInfo(ProductResult product) {
+  Widget _buildNotFound(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.search_off, size: 64, color: Colors.orange),
+            const SizedBox(height: 16),
+            const Text(
+              'Produto não encontrado',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Não conseguimos encontrar este código de barras na nossa base de dados.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.black54),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Funcionalidade de pesquisa manual será adicionada em breve!')),
+                );
+              },
+              icon: const Icon(Icons.search),
+              label: const Text('Procurar por nome'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1B998B),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProductInfo(BuildContext context, ProductResult product) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Product image
           if (product.imageUrl != null)
             Center(
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+                  ],
                 ),
                 child: Image.network(
                   product.imageUrl!,
                   height: 200,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Icon(
-                    Icons.image_not_supported,
-                    size: 100,
-                    color: Colors.grey,
-                  ),
+                  errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 100, color: Colors.grey),
                 ),
               ),
             ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
 
-          // Name & brand
-          Text(
-            product.name ?? 'Unknown product',
-            style: const TextStyle(
-                fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          if (product.brand != null)
-            Text(product.brand!,
-                style: TextStyle(fontSize: 16, color: Colors.grey[600])),
-
-          const SizedBox(height: 8),
-          Text('Barcode: ${widget.barcode}',
-              style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-
-          // Allergens
-          if (product.allergens.isNotEmpty) ...[
-            const SizedBox(height: 24),
-            const Text('Allergens',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red)),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: product.allergens
-                  .map((a) => Chip(
-                        label: Text(a),
-                        backgroundColor: Colors.red[50],
-                        labelStyle: const TextStyle(color: Colors.red),
-                      ))
-                  .toList(),
-            ),
-          ],
-
-          // Ingredients with color coding
-          if (product.ingredients.isNotEmpty) ...[
-            const SizedBox(height: 24),
-            const Text('Ingredients',
-                style: TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            // Legend
-            Row(
+          Center(
+            child: Column(
               children: [
-                _legendDot(Colors.green, 'Good'),
-                const SizedBox(width: 12),
-                _legendDot(Colors.orange, 'Moderate'),
-                const SizedBox(width: 12),
-                _legendDot(Colors.red, 'Harmful'),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: product.ingredients.map((ingredient) {
-                final color = _getIngredientColor(ingredient);
-                return Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: color.withAlpha(30),
-                    border: Border.all(color: color, width: 1.5),
-                    borderRadius: BorderRadius.circular(8),
+                Text(
+                  product.name ?? 'Produto Desconhecido',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF2C3E50),
+                    letterSpacing: -0.5,
                   ),
-                  child: Text(
-                    ingredient,
-                    style: TextStyle(
-                      color: color.shade700,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
+                ),
+                if (product.brand != null) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1B998B).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      product.brand!.toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1B998B),
+                        letterSpacing: 1.2,
+                      ),
                     ),
                   ),
-                );
-              }).toList(),
+                ],
+              ],
             ),
-          ] else if (product.ingredientsText != null &&
-              product.ingredientsText!.isNotEmpty) ...[
-            const SizedBox(height: 24),
-            const Text('Ingredients',
-                style: TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
+          ),
+
+          const SizedBox(height: 32),
+
+          if (product.nutriScore != null && product.nutriScore!.isNotEmpty)
+            Center(child: _buildNutriScore(product.nutriScore!)),
+            
+          if (product.nutrientLevels.isNotEmpty)
+            _buildNutrientLevels(product.nutrientLevels),
+
+          if (product.ingredients.isNotEmpty)
+            _IngredientsListWidget(
+              ingredients: product.ingredients,
+              allergens: product.allergens,
+            )
+          else if (product.ingredientsText != null && product.ingredientsText!.isNotEmpty) ...[
+            const Text('Ingredientes', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: _buildHighlightedText(product.ingredientsText!, product.allergens),
+            ),
+          ] else ...[
+            const SizedBox(height: 16),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.orange.shade200),
               ),
-              child: Text(product.ingredientsText!,
-                  style: const TextStyle(fontSize: 14, height: 1.5)),
+              child: const Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.orange, size: 24),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Ingredientes não disponíveis para este produto.',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ],
@@ -235,25 +235,387 @@ class _ProductScreenState extends State<ProductScreen> {
     );
   }
 
-  Widget _legendDot(Color color, String label) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 4),
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-      ],
+  Widget _buildNutriScore(String grade) {
+    grade = grade.toUpperCase();
+    Color badgeColor;
+    switch (grade) {
+      case 'A': badgeColor = const Color(0xFF008137); break;
+      case 'B': badgeColor = const Color(0xFF85BB2F); break;
+      case 'C': badgeColor = const Color(0xFFFDB900); break;
+      case 'D': badgeColor = const Color(0xFFEE8100); break;
+      case 'E': badgeColor = const Color(0xFFE63E11); break;
+      default: return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('Nutri-Score', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF2C3E50))),
+          const SizedBox(width: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            decoration: BoxDecoration(
+              color: badgeColor,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              grade,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNutrientLevels(Map<String, String> levels) {
+    if (levels.isEmpty) return const SizedBox.shrink();
+
+    final validKeys = ['fat', 'saturated-fat', 'sugars', 'salt'];
+    final tiles = validKeys
+        .where((k) => levels.containsKey(k))
+        .map((k) => _buildNutrientTile(k, levels[k]!))
+        .toList();
+
+    if (tiles.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 32),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: tiles.map((t) => Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: t))).toList(),
+      ),
+    );
+  }
+
+  Widget _buildNutrientTile(String key, String level) {
+    String name;
+    IconData icon;
+    switch (key) {
+      case 'fat': name = 'Gordura'; icon = Icons.water_drop; break;
+      case 'saturated-fat': name = 'G. Saturadas'; icon = Icons.opacity; break;
+      case 'sugars': name = 'Açúcares'; icon = Icons.cookie; break;
+      case 'salt': name = 'Sal'; icon = Icons.scatter_plot; break;
+      default: return const SizedBox.shrink();
+    }
+
+    Color color;
+    String label;
+    switch (level.toLowerCase()) {
+      case 'low': color = Colors.green; label = 'Baixo'; break;
+      case 'moderate': color = Colors.orange; label = 'Moderado'; break;
+      case 'high': color = Colors.red; label = 'Alto'; break;
+      default: return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            child: Icon(icon, size: 16, color: Colors.white),
+          ),
+          const SizedBox(height: 8),
+          Text(name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
+          const SizedBox(height: 4),
+          Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color), textAlign: TextAlign.center),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHighlightedText(String text, List<String> allergens) {
+    return Text(
+      text.toLowerCase(),
+      style: const TextStyle(fontSize: 15, height: 1.6, color: Colors.black87),
     );
   }
 }
 
-extension on Color {
-  Color get shade700 {
-    final hsl = HSLColor.fromColor(this);
-    return hsl.withLightness((hsl.lightness * 0.6).clamp(0.0, 1.0)).toColor();
+class _IngredientsListWidget extends StatefulWidget {
+  final List<Ingredient> ingredients;
+  final List<String> allergens;
+
+  const _IngredientsListWidget({required this.ingredients, required this.allergens});
+
+  @override
+  State<_IngredientsListWidget> createState() => _IngredientsListWidgetState();
+}
+
+class _IngredientsListWidgetState extends State<_IngredientsListWidget> {
+  IngredientLevel _getEffectiveLevel(Ingredient ingredient) {
+    IngredientLevel level = classifyIngredient(ingredient.text, widget.allergens);
+    if (level == IngredientLevel.bad) return IngredientLevel.bad;
+
+    for (final sub in ingredient.subIngredients) {
+      final subLevel = _getEffectiveLevel(sub);
+      if (subLevel == IngredientLevel.bad) return IngredientLevel.bad;
+      if (subLevel == IngredientLevel.moderate) level = IngredientLevel.moderate;
+    }
+    return level;
+  }
+
+  bool _hasAllergenRecursive(Ingredient ingredient) {
+    final lower = ingredient.text.toLowerCase().trim();
+    for (final allergen in widget.allergens) {
+      if (lower.contains(allergen.toLowerCase().trim())) {
+        return true;
+      }
+    }
+    return ingredient.subIngredients.any(_hasAllergenRecursive);
+  }
+
+  Widget _legendDot(Color color, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(width: 12, height: 12, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        const SizedBox(width: 6),
+        Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Sort ingredients: Red first (allergens or bad), then Orange, then Green
+    final sortedIngredients = List<Ingredient>.from(widget.ingredients)..sort((a, b) {
+      final levelA = _getEffectiveLevel(a);
+      final levelB = _getEffectiveLevel(b);
+      
+      final scoreComparison = levelB.index.compareTo(levelA.index); // Higher index (bad) first
+      if (scoreComparison != 0) return scoreComparison;
+      return a.text.compareTo(b.text); // Alphabetical fallback
+    });
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          iconColor: const Color(0xFF1B998B),
+          collapsedIconColor: const Color(0xFF1B998B),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1B998B).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.receipt_long, color: Color(0xFF1B998B)),
+          ),
+          title: const Text('Ingredientes', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50))),
+          initiallyExpanded: true,
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _legendDot(Colors.green, 'Bom'),
+                _legendDot(Colors.orange, 'Moderado'),
+                _legendDot(Colors.red, 'Evitar'),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: sortedIngredients.map((ingredient) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _IngredientItemWidget(
+                    ingredient: ingredient,
+                    allergens: widget.allergens,
+                    effectiveLevel: _getEffectiveLevel(ingredient),
+                    hasAllergen: _hasAllergenRecursive(ingredient),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _IngredientItemWidget extends StatefulWidget {
+  final Ingredient ingredient;
+  final List<String> allergens;
+  final IngredientLevel effectiveLevel;
+  final bool hasAllergen;
+
+  const _IngredientItemWidget({
+    required this.ingredient,
+    required this.allergens,
+    required this.effectiveLevel,
+    required this.hasAllergen,
+  });
+
+  @override
+  State<_IngredientItemWidget> createState() => _IngredientItemWidgetState();
+}
+
+class _IngredientItemWidgetState extends State<_IngredientItemWidget> {
+  bool _isExpanded = false;
+
+  Color _getLevelColor(IngredientLevel level) {
+    switch (level) {
+      case IngredientLevel.bad:
+        return Colors.red;
+      case IngredientLevel.moderate:
+        return Colors.orange;
+      case IngredientLevel.good:
+        return Colors.green;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _getLevelColor(widget.effectiveLevel);
+    final hasSubs = widget.ingredient.subIngredients.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: hasSubs ? () => setState(() => _isExpanded = !_isExpanded) : null,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withValues(alpha: 0.2)),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                )
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Flexible(
+                        child: Text(
+                          widget.ingredient.text,
+                          style: const TextStyle(
+                            color: Color(0xFF2C3E50),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (hasSubs) ...[
+                  const SizedBox(width: 8),
+                  Icon(
+                    _isExpanded ? Icons.expand_less : Icons.expand_more,
+                    size: 24,
+                    color: Colors.grey.shade400,
+                  ),
+                ] else ...[
+                  const SizedBox(height: 24), // keep row height fairly stable structurally
+                ],
+              ],
+            ),
+          ),
+        ),
+        if (_isExpanded && hasSubs)
+          Padding(
+            padding: const EdgeInsets.only(left: 20, top: 6, bottom: 8, right: 0),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: widget.ingredient.subIngredients.map((sub) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: _IngredientItemWidget(
+                      ingredient: sub,
+                      allergens: widget.allergens,
+                      effectiveLevel: _getEffectiveLevelForSub(sub),
+                      hasAllergen: _hasAllergenRecursive(sub),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  IngredientLevel _getEffectiveLevelForSub(Ingredient ingredient) {
+    IngredientLevel level = classifyIngredient(ingredient.text, widget.allergens);
+    if (level == IngredientLevel.bad) return IngredientLevel.bad;
+
+    for (final sub in ingredient.subIngredients) {
+      final subLevel = _getEffectiveLevelForSub(sub);
+      if (subLevel == IngredientLevel.bad) return IngredientLevel.bad;
+      if (subLevel == IngredientLevel.moderate) level = IngredientLevel.moderate;
+    }
+    return level;
+  }
+
+  bool _hasAllergenRecursive(Ingredient ingredient) {
+    final lower = ingredient.text.toLowerCase().trim();
+    for (final allergen in widget.allergens) {
+      if (lower.contains(allergen.toLowerCase().trim())) {
+        return true;
+      }
+    }
+    return ingredient.subIngredients.any(_hasAllergenRecursive);
   }
 }

@@ -1,6 +1,6 @@
 {
-    "name": "nutricode_prototype",
-    "short_name": "nutricode_prototype",
+    "name": "NutriCode",
+    "short_name": "NutriCode",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
