@@ -438,6 +438,12 @@ Some screenshots and demos:
   <img src="docs/iteration1_board.png" width="800">
 </p>
 
+**Happiness Meter**
+
+<p align="center">
+  <img src="docs/happiness_meters.png" width="800">
+</p>
+
 ### Sprint 2
 
 ### Sprint 3
