@@ -425,5 +425,3 @@ Some screenshots and demos:
 ### Sprint 4
 
 ### Final Release
-
-
