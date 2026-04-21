@@ -418,6 +418,26 @@ Some screenshots and demos:
 
 ### Sprint 1
 
+**Retrospective**
+
+- **Did well:**
+  - Feature expansion: We extended the prototype to support allergen profile customization and improved ingredient analysis feedback.
+  - Improved task distribution: Work was more clearly divided among José, Miguel, Vasco, and Victor, enabling parallel development and reducing idle time.
+
+- **Do differently:**
+  - Better estimation: Some tasks took shorter than expected, so we aim to improve sprint planning and estimation accuracy.
+  - Improve branch management: Branches were not always used effectively, leading to larger and more complex merges. We aim to adopt a clearer branching strategy (e.g., feature branches with smaller, more frequent merges) to improve collaboration and code integration.
+  - Increase test coverage: There was a lack of automated tests, which made it harder to catch bugs early and ensure stability. In the next sprint, we plan to introduce unit and widget tests and integrate testing into the development workflow.
+
+- **Puzzles:**
+  - Data reliability: Some product data from the Open Food Facts API is incomplete or inconsistent, raising challenges for accurate allergen detection.
+
+**Board at the End of Iteration 1**
+
+<p align="center">
+  <img src="docs/iteration1_board.png" width="800">
+</p>
+
 ### Sprint 2
 
 ### Sprint 3
