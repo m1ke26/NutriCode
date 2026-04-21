@@ -421,7 +421,7 @@ Some screenshots and demos:
 **Retrospective**
 
 - **Did well:**
-  - Feature expansion: We extended the prototype to support allergen profile customization and improved ingredient analysis feedback.
+  - Feature expansion: We extended the prototype to support view harmful products and implement the traffic light veridict. Besides that now the app can scan a product.
   - Improved task distribution: Work was more clearly divided among José, Miguel, Vasco, and Victor, enabling parallel development and reducing idle time.
 
 - **Do differently:**
