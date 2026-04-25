@@ -1,12 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'translation_service.dart';
 
 class Ingredient {
   final String text;
+  final String englishText;
   final List<Ingredient> subIngredients;
 
   Ingredient({
     required this.text,
+    this.englishText = '',
     this.subIngredients = const [],
   });
 
@@ -180,6 +183,34 @@ class OpenFoodFactsService {
     // De-duplicate top-level ingredients while preserving order
     final seen = <String>{};
     ingredients = ingredients.where((i) => seen.add(i.text)).toList();
+
+    // Translate ingredients
+    List<String> allTexts = [];
+    void collectTexts(List<Ingredient> ings) {
+      for (var i in ings) {
+        allTexts.add(i.text);
+        collectTexts(i.subIngredients);
+      }
+    }
+    collectTexts(ingredients);
+
+    final uniqueTexts = allTexts.toSet().toList();
+    if (uniqueTexts.isNotEmpty) {
+      final translatedTexts = await TranslationService.translateToEnglishBulk(uniqueTexts);
+      final translationMap = Map.fromIterables(uniqueTexts, translatedTexts);
+
+      List<Ingredient> applyTranslations(List<Ingredient> ings) {
+        return ings.map((i) {
+          return Ingredient(
+            text: i.text,
+            englishText: translationMap[i.text] ?? '',
+            subIngredients: applyTranslations(i.subIngredients),
+          );
+        }).toList();
+      }
+
+      ingredients = applyTranslations(ingredients);
+    }
 
     // Prefer clean product image, fallback chain
     final imageUrl = product['image_front_url'] as String?

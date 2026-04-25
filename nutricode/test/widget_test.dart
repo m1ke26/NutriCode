@@ -4,6 +4,6 @@ import 'package:NutriCode/main.dart';
 void main() {
   testWidgets('App starts', (WidgetTester tester) async {
     await tester.pumpWidget(const NutriCodeApp());
-    expect(find.text('NutriCode'), findsOneWidget);
+    expect(find.text('Get Started'), findsOneWidget);
   });
 }

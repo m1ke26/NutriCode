@@ -12,7 +12,7 @@ class ScannerScreen extends StatefulWidget {
 
 class _ScannerScreenState extends State<ScannerScreen>
     with SingleTickerProviderStateMixin {
-  final MobileScannerController _controller = MobileScannerController(
+  MobileScannerController _controller = MobileScannerController(
     detectionSpeed: DetectionSpeed.noDuplicates,
     formats: const [
       BarcodeFormat.ean13,
@@ -22,6 +22,25 @@ class _ScannerScreenState extends State<ScannerScreen>
       BarcodeFormat.itf,
     ],
   );
+
+  Key _scannerKey = UniqueKey();
+
+  void _reinitController() {
+    try {
+      _controller.dispose();
+    } catch (_) {}
+    _controller = MobileScannerController(
+      detectionSpeed: DetectionSpeed.noDuplicates,
+      formats: const [
+        BarcodeFormat.ean13,
+        BarcodeFormat.ean8,
+        BarcodeFormat.upcA,
+        BarcodeFormat.upcE,
+        BarcodeFormat.itf,
+      ],
+    );
+    _scannerKey = UniqueKey();
+  }
 
   final TextEditingController _barcodeController = TextEditingController();
   bool _isNavigating = false;
@@ -222,9 +241,13 @@ class _ScannerScreenState extends State<ScannerScreen>
                   fit: StackFit.expand,
                   children: [
                     MobileScanner(
+                      key: _scannerKey,
                       controller: _controller,
                       onDetect: _onBarcodeDetected,
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, child) {
+                        return _buildScannerError(context, error);
+                      },
                     ),
 
                     // Stylized scan window overlay
@@ -364,7 +387,7 @@ class _ScannerScreenState extends State<ScannerScreen>
                       ),
                       const SizedBox(width: 12),
                       const Text(
-                        'A ler código...',
+                        'Scanning...',
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w600,
@@ -400,8 +423,8 @@ class _ScannerScreenState extends State<ScannerScreen>
           const SizedBox(height: 8),
           Text(
             _isScanning
-                ? 'A procurar código de barras...'
-                : 'Aponte a câmara para um código de barras',
+                ? 'Looking for barcode...'
+                : 'Point the camera at a barcode',
             style: TextStyle(
               color: _isScanning ? const Color(0xFF1B998B) : Colors.black54,
               fontSize: 14,
@@ -429,7 +452,7 @@ class _ScannerScreenState extends State<ScannerScreen>
                       style: const TextStyle(
                           color: Colors.black87, fontSize: 15),
                       decoration: InputDecoration(
-                        hintText: 'Inserir código manualmente...',
+                        hintText: 'Enter barcode manually...',
                         hintStyle: const TextStyle(
                             color: Colors.black38, fontSize: 14),
                         filled: true,
@@ -473,6 +496,72 @@ class _ScannerScreenState extends State<ScannerScreen>
           ),
           const SizedBox(height: 24),
         ],
+      ),
+    );
+  }
+
+  Widget _buildScannerError(BuildContext context, MobileScannerException error) {
+    String errorMessage;
+    IconData errorIcon = Icons.error_outline;
+
+    switch (error.errorCode) {
+      case MobileScannerErrorCode.permissionDenied:
+        errorMessage = 'Camera permission was denied.\nPlease enable it in your device settings.';
+        errorIcon = Icons.no_photography_outlined;
+        break;
+      case MobileScannerErrorCode.unsupported:
+        errorMessage = 'Camera is not supported on this device.';
+        errorIcon = Icons.camera_alt_outlined;
+        break;
+      default:
+        errorMessage = 'Scanner unavailable.\nPlease restart the scanner or app.';
+        break;
+    }
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(errorIcon, color: Colors.white70, size: 48),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              errorMessage,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 24),
+            OutlinedButton.icon(
+              onPressed: () {
+                setState(() {
+                  _reinitController();
+                  // The new MobileScanner widget will automatically start the new controller.
+                });
+              },
+              icon: const Icon(Icons.refresh, size: 20),
+              label: const Text('Restart Scanner'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.white54),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

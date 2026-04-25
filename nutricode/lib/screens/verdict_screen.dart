@@ -47,7 +47,7 @@ class _VerdictScreenContent extends StatelessWidget {
               CircularProgressIndicator(color: Color(0xFF1B998B)),
               SizedBox(height: 16),
               Text(
-                'A analisar produto... 🔍',
+                'Analyzing product... 🔍',
                 style: TextStyle(fontSize: 16, color: Colors.blueGrey),
               ),
             ],
@@ -73,7 +73,7 @@ class _VerdictScreenContent extends StatelessWidget {
             const Icon(Icons.wifi_off, size: 72, color: Colors.redAccent),
             const SizedBox(height: 20),
             Text(
-              provider.errorMessage ?? 'Erro desconhecido',
+              provider.errorMessage ?? 'Unknown error',
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16, height: 1.5),
             ),
