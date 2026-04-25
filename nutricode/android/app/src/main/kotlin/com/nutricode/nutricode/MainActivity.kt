@@ -1,4 +1,4 @@
-package com.nutricode.nutricode_prototype
+package com.nutricode.nutricode
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -3,13 +3,22 @@ import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
 import '../services/open_food_facts_service.dart';
 import '../utils/ingredient_classifier.dart';
+import '../widgets/ingredient_info_sheet.dart';
 
 class ProductScreen extends StatelessWidget {
   final String barcode;
-  const ProductScreen({super.key, required this.barcode});
+  final ProductProvider? provider;
+  
+  const ProductScreen({super.key, required this.barcode, this.provider});
 
   @override
   Widget build(BuildContext context) {
+    if (provider != null) {
+      return ChangeNotifierProvider<ProductProvider>.value(
+        value: provider!,
+        child: const _ProductScreenContent(),
+      );
+    }
     return ChangeNotifierProvider(
       create: (_) => ProductProvider()..fetchProduct(barcode),
       child: const _ProductScreenContent(),
@@ -43,12 +52,12 @@ class _ProductScreenContent extends StatelessWidget {
             children: [
               CircularProgressIndicator(color: Color(0xFF1B998B)),
               SizedBox(height: 16),
-              Text('A analisar embalagem... 🔍', style: TextStyle(fontSize: 16, color: Colors.blueGrey)),
+              Text('Analyzing package... 🔍', style: TextStyle(fontSize: 16, color: Colors.blueGrey)),
             ],
           ),
         );
       case ProductState.error:
-        return _buildError(provider.errorMessage ?? 'Erro desconhecido');
+        return _buildError(provider.errorMessage ?? 'Unknown error');
       case ProductState.notFound:
         return _buildNotFound(context);
       case ProductState.success:
@@ -82,13 +91,13 @@ class _ProductScreenContent extends StatelessWidget {
             const Icon(Icons.search_off, size: 64, color: Colors.orange),
             const SizedBox(height: 16),
             const Text(
-              'Produto não encontrado',
+              'Product not found',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
-              'Não conseguimos encontrar este código de barras na nossa base de dados.',
+              'We couldn\'t find this barcode in our database.',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.black54),
             ),
@@ -96,11 +105,11 @@ class _ProductScreenContent extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Funcionalidade de pesquisa manual será adicionada em breve!')),
+                  const SnackBar(content: Text('Manual search feature will be added soon!')),
                 );
               },
               icon: const Icon(Icons.search),
-              label: const Text('Procurar por nome'),
+              label: const Text('Search by name'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1B998B),
                 foregroundColor: Colors.white,
@@ -146,7 +155,7 @@ class _ProductScreenContent extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  product.name ?? 'Produto Desconhecido',
+                  product.name ?? 'Unknown Product',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 28,
@@ -192,7 +201,7 @@ class _ProductScreenContent extends StatelessWidget {
               allergens: product.allergens,
             )
           else if (product.ingredientsText != null && product.ingredientsText!.isNotEmpty) ...[
-            const Text('Ingredientes', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text('Ingredients', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(16),
@@ -218,7 +227,7 @@ class _ProductScreenContent extends StatelessWidget {
                   SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Ingredientes não disponíveis para este produto.',
+                      'Ingredients not available for this product.',
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.black87,
@@ -304,19 +313,19 @@ class _ProductScreenContent extends StatelessWidget {
     String name;
     IconData icon;
     switch (key) {
-      case 'fat': name = 'Gordura'; icon = Icons.water_drop; break;
-      case 'saturated-fat': name = 'G. Saturadas'; icon = Icons.opacity; break;
-      case 'sugars': name = 'Açúcares'; icon = Icons.cookie; break;
-      case 'salt': name = 'Sal'; icon = Icons.scatter_plot; break;
+      case 'fat': name = 'Fat'; icon = Icons.water_drop; break;
+      case 'saturated-fat': name = 'Sat. Fat'; icon = Icons.opacity; break;
+      case 'sugars': name = 'Sugars'; icon = Icons.cookie; break;
+      case 'salt': name = 'Salt'; icon = Icons.scatter_plot; break;
       default: return const SizedBox.shrink();
     }
 
     Color color;
     String label;
     switch (level.toLowerCase()) {
-      case 'low': color = Colors.green; label = 'Baixo'; break;
-      case 'moderate': color = Colors.orange; label = 'Moderado'; break;
-      case 'high': color = Colors.red; label = 'Alto'; break;
+      case 'low': color = Colors.green; label = 'Low'; break;
+      case 'moderate': color = Colors.orange; label = 'Moderate'; break;
+      case 'high': color = Colors.red; label = 'High'; break;
       default: return const SizedBox.shrink();
     }
 
@@ -364,7 +373,8 @@ class _IngredientsListWidget extends StatefulWidget {
 
 class _IngredientsListWidgetState extends State<_IngredientsListWidget> {
   IngredientLevel _getEffectiveLevel(Ingredient ingredient) {
-    IngredientLevel level = classifyIngredient(ingredient.text, widget.allergens);
+    final textToClassify = ingredient.englishText.isNotEmpty ? ingredient.englishText : ingredient.text;
+    IngredientLevel level = classifyIngredient(textToClassify, widget.allergens);
     if (level == IngredientLevel.bad) return IngredientLevel.bad;
 
     for (final sub in ingredient.subIngredients) {
@@ -434,7 +444,7 @@ class _IngredientsListWidgetState extends State<_IngredientsListWidget> {
             ),
             child: const Icon(Icons.receipt_long, color: Color(0xFF1B998B)),
           ),
-          title: const Text('Ingredientes', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50))),
+          title: const Text('Ingredients', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50))),
           initiallyExpanded: true,
           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
@@ -442,9 +452,9 @@ class _IngredientsListWidgetState extends State<_IngredientsListWidget> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _legendDot(Colors.green, 'Bom'),
-                _legendDot(Colors.orange, 'Moderado'),
-                _legendDot(Colors.red, 'Evitar'),
+                  _legendDot(Colors.green, 'Good'),
+                  _legendDot(Colors.orange, 'Moderate'),
+                  _legendDot(Colors.red, 'Avoid'),
               ],
             ),
             const SizedBox(height: 20),
@@ -542,11 +552,30 @@ class _IngredientItemWidgetState extends State<_IngredientItemWidget> {
                       const SizedBox(width: 12),
                       Flexible(
                         child: Text(
-                          widget.ingredient.text,
+                          _getDisplayText(),
                           style: const TextStyle(
                             color: Color(0xFF2C3E50),
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () {
+                          showIngredientInfo(
+                            context,
+                            ingredientName: _getDisplayText(),
+                            englishName: widget.ingredient.englishText,
+                            level: widget.effectiveLevel,
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Icon(
+                            Icons.info_outline,
+                            size: 20,
+                            color: Colors.blueGrey.shade300,
                           ),
                         ),
                       ),
@@ -555,10 +584,13 @@ class _IngredientItemWidgetState extends State<_IngredientItemWidget> {
                 ),
                 if (hasSubs) ...[
                   const SizedBox(width: 8),
-                  Icon(
-                    _isExpanded ? Icons.expand_less : Icons.expand_more,
-                    size: 24,
-                    color: Colors.grey.shade400,
+                  GestureDetector(
+                    onTap: () => setState(() => _isExpanded = !_isExpanded),
+                    child: Icon(
+                      _isExpanded ? Icons.expand_less : Icons.expand_more,
+                      size: 24,
+                      color: Colors.grey.shade400,
+                    ),
                   ),
                 ] else ...[
                   const SizedBox(height: 24), // keep row height fairly stable structurally
@@ -598,7 +630,8 @@ class _IngredientItemWidgetState extends State<_IngredientItemWidget> {
   }
 
   IngredientLevel _getEffectiveLevelForSub(Ingredient ingredient) {
-    IngredientLevel level = classifyIngredient(ingredient.text, widget.allergens);
+    final textToClassify = ingredient.englishText.isNotEmpty ? ingredient.englishText : ingredient.text;
+    IngredientLevel level = classifyIngredient(textToClassify, widget.allergens);
     if (level == IngredientLevel.bad) return IngredientLevel.bad;
 
     for (final sub in ingredient.subIngredients) {
@@ -617,5 +650,13 @@ class _IngredientItemWidgetState extends State<_IngredientItemWidget> {
       }
     }
     return ingredient.subIngredients.any(_hasAllergenRecursive);
+  }
+
+  String _getDisplayText() {
+    String text = widget.ingredient.englishText.isNotEmpty 
+        ? widget.ingredient.englishText 
+        : widget.ingredient.text;
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1);
   }
 }
