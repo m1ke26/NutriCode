@@ -40,6 +40,7 @@ class ProductSearchService {
       'action': 'process',
       'json': '1',
       'page_size': pageSize.toString(),
+      'sort_by': 'unique_scans_n',
       'fields': 'code,product_name,brands,image_front_small_url',
     });
 

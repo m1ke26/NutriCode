@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../services/product_search_service.dart';
 import 'verdict_screen.dart';
@@ -19,6 +20,7 @@ class SearchScreenState extends State<SearchScreen> {
   bool _isLoading = false;
   bool _hasSearched = false;
   String? _errorMessage;
+  bool _isNetworkError = false;
   Timer? _debounce;
 
   @override
@@ -30,7 +32,6 @@ class SearchScreenState extends State<SearchScreen> {
   }
 
   void _onSearchChanged(String query) {
-    _debounce?.cancel();
     if (query.trim().isEmpty) {
       setState(() {
         _results = [];
@@ -42,10 +43,6 @@ class SearchScreenState extends State<SearchScreen> {
 
     // Rebuild to show/hide the clear button immediately
     setState(() {});
-
-    _debounce = Timer(const Duration(milliseconds: 400), () {
-      _performSearch(query);
-    });
   }
 
   Future<void> _performSearch(String query) async {
@@ -70,16 +67,25 @@ class SearchScreenState extends State<SearchScreen> {
         setState(() {
           _isLoading = false;
           _hasSearched = true;
-          _errorMessage = 'Could not search. Check your internet connection.';
+          
+          if (e is SocketException || e is TimeoutException) {
+            _errorMessage = 'Could not connect. Please check your internet connection.';
+            _isNetworkError = true;
+          } else {
+            // Usually means Open Food Facts returned a 50x error or rate limit
+            _errorMessage = 'The search service is currently unavailable. Please try again later.';
+            _isNetworkError = false;
+          }
         });
       }
     }
   }
 
   void _onSubmit() {
-    _debounce?.cancel();
     final query = _searchController.text.trim();
     if (query.isNotEmpty) {
+      // Unfocus keyboard when searching
+      _focusNode.unfocus();
       _performSearch(query);
     }
   }
@@ -249,7 +255,11 @@ class SearchScreenState extends State<SearchScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.wifi_off, size: 56, color: Colors.redAccent),
+              Icon(
+                _isNetworkError ? Icons.wifi_off : Icons.error_outline, 
+                size: 56, 
+                color: _isNetworkError ? Colors.redAccent : Colors.orangeAccent
+              ),
               const SizedBox(height: 16),
               Text(
                 _errorMessage!,
