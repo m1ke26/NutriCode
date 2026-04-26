@@ -514,6 +514,14 @@ class _IngredientItemWidgetState extends State<_IngredientItemWidget> {
   Widget build(BuildContext context) {
     final color = _getLevelColor(widget.effectiveLevel);
     final hasSubs = widget.ingredient.subIngredients.isNotEmpty;
+    final hasDesc = hasIngredientDescription(
+      _getDisplayText(),
+      englishName: widget.ingredient.englishText,
+    );
+    
+    // The user wants: if it expands to others (hasSubs) AND doesn't have its own description (!hasDesc),
+    // you can't click on it to see the fallback description.
+    final canShowInfo = !hasSubs || hasDesc;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -560,25 +568,27 @@ class _IngredientItemWidgetState extends State<_IngredientItemWidget> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      GestureDetector(
-                        onTap: () {
-                          showIngredientInfo(
-                            context,
-                            ingredientName: _getDisplayText(),
-                            englishName: widget.ingredient.englishText,
-                            level: widget.effectiveLevel,
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Icon(
-                            Icons.info_outline,
-                            size: 20,
-                            color: Colors.blueGrey.shade300,
+                      if (canShowInfo) ...[
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: () {
+                            showIngredientInfo(
+                              context,
+                              ingredientName: _getDisplayText(),
+                              englishName: widget.ingredient.englishText,
+                              level: widget.effectiveLevel,
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Icon(
+                              Icons.info_outline,
+                              size: 20,
+                              color: Colors.blueGrey.shade300,
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),

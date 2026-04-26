@@ -9,15 +9,15 @@ class TranslationService {
     if (texts.isEmpty) return [];
 
     try {
-      // Use newline as delimiter; Google Translate preserves newlines well
-      const delimiter = '\n';
+      // Use a strong delimiter to prevent Google Translate from merging lines
+      const delimiter = ' | ';
       final combined = texts.join(delimiter);
 
       final translation = await _translator.translate(combined, to: 'en');
       final translatedCombined = translation.text;
 
       final result = translatedCombined
-          .split('\n')
+          .split('|')
           .map((s) => s.trim().toLowerCase())
           .toList();
 
