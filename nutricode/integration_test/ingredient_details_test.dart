@@ -80,5 +80,48 @@ void main() {
       // Ensure bottom sheet is closed
       expect(find.text('Got it'), findsNothing);
     });
+    testWidgets('Tapping unknown ingredient info icon shows search button (Acceptance)', (WidgetTester tester) async {
+      final mockResult = ProductResult(
+        found: true,
+        name: 'Mysterious Product',
+        brand: 'Unknown Brand',
+        imageUrl: '',
+        ingredientsText: 'MysteryChemicalX',
+        nutriScore: 'd',
+        allergens: [],
+        ingredients: [
+          Ingredient(text: 'MysteryChemicalX', englishText: 'MysteryChemicalX', subIngredients: []),
+        ],
+        nutrientLevels: {},
+      );
+
+      final mockProvider = MockProductProvider(mockResult);
+
+      await tester.pumpWidget(MaterialApp(
+        home: ProductScreen(
+          barcode: 'mock_barcode_2',
+          provider: mockProvider,
+        ),
+      ));
+      
+      await tester.pumpAndSettle();
+
+      // Find and tap info icon for the unknown ingredient
+      expect(find.text('MysteryChemicalX'), findsOneWidget);
+      final infoButton = find.byIcon(Icons.info_outline).first;
+      await tester.tap(infoButton);
+      await tester.pumpAndSettle();
+
+      // Verify fallback description and Search button
+      expect(find.textContaining('generally considered safe'), findsOneWidget); // Default for "Good" if not classified as bad/mod
+      expect(find.text('Search online for more info'), findsOneWidget);
+      
+      // Tap Search button to ensure it doesn't crash the app
+      await tester.tap(find.text('Search online for more info'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Got it'));
+      await tester.pumpAndSettle();
+    });
   });
 }
