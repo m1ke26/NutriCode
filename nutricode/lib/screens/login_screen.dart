@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'scanner_screen.dart';
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _login() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const ScannerScreen()),
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
     );
   }
 
@@ -271,7 +271,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _register() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const ScannerScreen()),
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
     );
   }
 

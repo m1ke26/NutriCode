@@ -124,8 +124,10 @@ class OpenFoodFactsService {
           final textRaw = (item['text'] ?? '').toString();
           
           String text = '';
+          bool isEnglish = false;
           if (idRaw.startsWith('en:')) {
             text = idRaw.substring(3);
+            isEnglish = true;
           } else if (idRaw.contains(':')) {
             // Strip any native prefix like "pt:" or "fr:"
             text = idRaw.substring(idRaw.indexOf(':') + 1);
@@ -134,18 +136,22 @@ class OpenFoodFactsService {
           }
           
           // Replace anything that is not a letter/number with a space (removes '-', '_', etc.)
-          text = text.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ');
+          text = text.replaceAll(RegExp(r'[^\p{L}\p{N}\s]', unicode: true), ' ');
           // Clean up multiple spaces
           text = text.replaceAll(RegExp(r'\s+'), ' ').trim().toLowerCase();
           
-          if (text.length >= 2 && text.contains(RegExp(r'[a-z]'))) {
+          if (text.length >= 2 && text.contains(RegExp(r'\p{L}', unicode: true))) {
             // Capitalize the first letter
             text = text[0].toUpperCase() + text.substring(1);
             
             final subs = item['ingredients'] is List 
                 ? extractIngredients(item['ingredients']) 
                 : <Ingredient>[];
-            result.add(Ingredient(text: text, subIngredients: subs));
+            result.add(Ingredient(
+              text: text, 
+              englishText: isEnglish ? text.toLowerCase() : '',
+              subIngredients: subs
+            ));
           } else if (item['ingredients'] is List) {
             // Some items might not have text but have sub-ingredients (unlikely but safe)
             result.addAll(extractIngredients(item['ingredients']));
@@ -165,13 +171,13 @@ class OpenFoodFactsService {
         ingredients = ingredientsText
             .split(RegExp(r'[,()\[\]]'))
             .map((s) {
-              String cleaned = s.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ')
+              String cleaned = s.replaceAll(RegExp(r'[^\p{L}\p{N}\s]', unicode: true), ' ')
                                 .replaceAll(RegExp(r'\s+'), ' ')
                                 .trim()
                                 .toLowerCase();
               return cleaned;
             })
-            .where((t) => t.length >= 2 && t.contains(RegExp(r'[a-z]')))
+            .where((t) => t.length >= 2 && t.contains(RegExp(r'\p{L}', unicode: true)))
             .map((t) {
               final capitalized = t[0].toUpperCase() + t.substring(1);
               return Ingredient(text: capitalized);
@@ -188,7 +194,9 @@ class OpenFoodFactsService {
     List<String> allTexts = [];
     void collectTexts(List<Ingredient> ings) {
       for (var i in ings) {
-        allTexts.add(i.text);
+        if (i.englishText.isEmpty) {
+          allTexts.add(i.text);
+        }
         collectTexts(i.subIngredients);
       }
     }
@@ -201,9 +209,10 @@ class OpenFoodFactsService {
 
       List<Ingredient> applyTranslations(List<Ingredient> ings) {
         return ings.map((i) {
+          // If englishText is already set, keep it, otherwise translate
           return Ingredient(
             text: i.text,
-            englishText: translationMap[i.text] ?? '',
+            englishText: i.englishText.isNotEmpty ? i.englishText : (translationMap[i.text] ?? ''),
             subIngredients: applyTranslations(i.subIngredients),
           );
         }).toList();

@@ -3,6 +3,23 @@ import 'package:url_launcher/url_launcher.dart';
 import '../utils/ingredient_classifier.dart';
 import '../utils/ingredient_descriptions.dart';
 
+/// Checks if an ingredient has a specific description in the dictionary.
+bool hasIngredientDescription(String ingredientName, {String? englishName}) {
+  final nameForLookup = englishName?.isNotEmpty == true ? englishName! : ingredientName;
+  final lower = nameForLookup.toLowerCase().trim();
+
+  if (ingredientDescriptions.containsKey(lower)) return true;
+
+  final entries = ingredientDescriptions.entries.toList()
+    ..sort((a, b) => b.key.length.compareTo(a.key.length));
+  for (final entry in entries) {
+    if (lower.contains(entry.key)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /// Shows a modal bottom sheet with a description of the given ingredient.
 ///
 /// The description is looked up from the local dictionary first.  If no entry
