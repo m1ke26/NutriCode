@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../utils/ingredient_classifier.dart';
 import '../utils/ingredient_descriptions.dart';
 
@@ -16,6 +17,7 @@ void showIngredientInfo(
   final nameForLookup = englishName?.isNotEmpty == true ? englishName! : ingredientName;
   final lower = nameForLookup.toLowerCase().trim();
 
+  bool isFallback = false;
   // Try exact match first, then substring match against known keys
   String? description = ingredientDescriptions[lower];
   if (description == null) {
@@ -30,7 +32,10 @@ void showIngredientInfo(
   }
 
   // Fallback when not in dictionary
-  description ??= _fallbackDescription(level);
+  if (description == null) {
+    description = _fallbackDescription(level);
+    isFallback = true;
+  }
 
   final Color color;
   final IconData icon;
@@ -60,7 +65,7 @@ void showIngredientInfo(
     builder: (ctx) {
       return Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(ctx).size.height * 0.55,
+          maxHeight: MediaQuery.of(ctx).size.height * 0.65,
         ),
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -153,7 +158,34 @@ void showIngredientInfo(
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
+
+              // Search Online button (only for fallback)
+              if (isFallback) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final query = Uri.encodeComponent(ingredientName);
+                      final url = Uri.parse('https://www.google.com/search?q=$query+food+ingredient+safety');
+                      if (await canLaunchUrl(url)) {
+                        await launchUrl(url, mode: LaunchMode.externalApplication);
+                      }
+                    },
+                    icon: const Icon(Icons.language, size: 20),
+                    label: const Text('Search online for more info'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: BorderSide(color: color.withValues(alpha: 0.5)),
+                      foregroundColor: color,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
 
               // Close button
               SizedBox(

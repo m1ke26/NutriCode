@@ -91,5 +91,64 @@ void main() {
       expect(find.textContaining('unknown harmless ingredient'), findsOneWidget);
       expect(find.textContaining('commonly found in everyday foods'), findsOneWidget);
     });
+
+    testWidgets('shows "Search online" button for fallback descriptions', (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (BuildContext context) {
+              return ElevatedButton(
+                onPressed: () {
+                  showIngredientInfo(
+                    context,
+                    ingredientName: 'mysterious chemical X',
+                    level: IngredientLevel.bad,
+                  );
+                },
+                child: const Text('Show'),
+              );
+            },
+          ),
+        ),
+      ));
+
+      await tester.tap(find.text('Show'));
+      await tester.pumpAndSettle();
+
+      // Should find the fallback text
+      expect(find.textContaining('flagged as potentially harmful'), findsOneWidget);
+      // Should find the search button
+      expect(find.text('Search online for more info'), findsOneWidget);
+      expect(find.byIcon(Icons.language), findsOneWidget);
+    });
+
+    testWidgets('does NOT show "Search online" button for dictionary descriptions', (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (BuildContext context) {
+              return ElevatedButton(
+                onPressed: () {
+                  showIngredientInfo(
+                    context,
+                    ingredientName: 'high fructose corn syrup',
+                    level: IngredientLevel.bad,
+                  );
+                },
+                child: const Text('Show'),
+              );
+            },
+          ),
+        ),
+      ));
+
+      await tester.tap(find.text('Show'));
+      await tester.pumpAndSettle();
+
+      // Should find the specific description
+      expect(find.textContaining('highly processed sweetener made from corn starch'), findsOneWidget);
+      // Should NOT find the search button
+      expect(find.text('Search online for more info'), findsNothing);
+    });
   });
 }
