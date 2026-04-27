@@ -161,7 +161,7 @@ class _ScannerScreenState extends State<ScannerScreen>
 
   void _cancelScan() {
     if (!_isScanning || _isNavigating) return;
-    
+
     _scanTimer?.cancel();
     setState(() {
       _isScanning = false;
@@ -185,9 +185,7 @@ class _ScannerScreenState extends State<ScannerScreen>
 
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => VerdictScreen(barcode: barcode.trim()),
-      ),
+      MaterialPageRoute(builder: (_) => VerdictScreen(barcode: barcode.trim())),
     );
 
     // After returning to this screen
@@ -206,7 +204,7 @@ class _ScannerScreenState extends State<ScannerScreen>
           _isNavigating = false;
           _lastDetectedBarcode = null;
           // Flashlight physical state resets when camera stops, so sync state here
-          _isTorchOn = false; 
+          _isTorchOn = false;
         });
       }
     }
@@ -220,10 +218,7 @@ class _ScannerScreenState extends State<ScannerScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('NutriCode'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('NutriCode'), centerTitle: true),
       body: Column(
         children: [
           // Scanner area takes up most of the screen
@@ -272,20 +267,22 @@ class _ScannerScreenState extends State<ScannerScreen>
                                 animation: _scanLinePosition,
                                 builder: (context, child) {
                                   return Positioned(
-                                    top: _scanLinePosition.value *
-                                        (180 - 3 - 16) + 8, // padding offset
+                                    top:
+                                        _scanLinePosition.value *
+                                            (180 - 3 - 16) +
+                                        8, // padding offset
                                     left: 30,
                                     right: 30,
                                     child: Container(
                                       height: 3,
                                       decoration: BoxDecoration(
                                         color: const Color(0xFF1B998B),
-                                        borderRadius:
-                                            BorderRadius.circular(2),
+                                        borderRadius: BorderRadius.circular(2),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: const Color(0xFF1B998B)
-                                                .withOpacity(0.8),
+                                            color: const Color(
+                                              0xFF1B998B,
+                                            ).withOpacity(0.8),
                                             blurRadius: 12,
                                             spreadRadius: 3,
                                           ),
@@ -302,16 +299,18 @@ class _ScannerScreenState extends State<ScannerScreen>
                                   height: 3,
                                   width: 220,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF1B998B)
-                                        .withOpacity(0.5),
+                                    color: const Color(
+                                      0xFF1B998B,
+                                    ).withOpacity(0.5),
                                     borderRadius: BorderRadius.circular(2),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: const Color(0xFF1B998B)
-                                            .withOpacity(0.3),
+                                        color: const Color(
+                                          0xFF1B998B,
+                                        ).withOpacity(0.3),
                                         blurRadius: 6,
                                         spreadRadius: 1,
-                                      )
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -401,10 +400,18 @@ class _ScannerScreenState extends State<ScannerScreen>
                           color: Colors.white.withOpacity(0.2),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.close, size: 16, color: Colors.white),
+                        child: const Icon(
+                          Icons.close,
+                          size: 16,
+                          color: Colors.white,
+                        ),
                       ),
                     ] else ...[
-                      const Icon(Icons.qr_code_scanner, color: Colors.white, size: 24),
+                      const Icon(
+                        Icons.qr_code_scanner,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                       const SizedBox(width: 12),
                       const Text(
                         'Scan',
@@ -413,7 +420,7 @@ class _ScannerScreenState extends State<ScannerScreen>
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ]
+                    ],
                   ],
                 ),
               ),
@@ -428,8 +435,7 @@ class _ScannerScreenState extends State<ScannerScreen>
             style: TextStyle(
               color: _isScanning ? const Color(0xFF1B998B) : Colors.black54,
               fontSize: 14,
-              fontWeight:
-                  _isScanning ? FontWeight.w500 : FontWeight.normal,
+              fontWeight: _isScanning ? FontWeight.w500 : FontWeight.normal,
             ),
           ),
           const SizedBox(height: 12),
@@ -450,25 +456,28 @@ class _ScannerScreenState extends State<ScannerScreen>
                       controller: _barcodeController,
                       keyboardType: TextInputType.number,
                       style: const TextStyle(
-                          color: Colors.black87, fontSize: 15),
+                        color: Colors.black87,
+                        fontSize: 15,
+                      ),
                       decoration: InputDecoration(
                         hintText: 'Enter barcode manually...',
                         hintStyle: const TextStyle(
-                            color: Colors.black38, fontSize: 14),
+                          color: Colors.black38,
+                          fontSize: 14,
+                        ),
                         filled: true,
                         fillColor: Colors.grey.shade100,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              BorderSide(color: Colors.grey.shade300),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              BorderSide(color: Colors.grey.shade300),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
                         ),
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 16),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
                       ),
                       onSubmitted: (_) => _onManualSubmit(),
                     ),
@@ -486,8 +495,11 @@ class _ScannerScreenState extends State<ScannerScreen>
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Icon(Icons.search,
-                          color: Colors.white, size: 24),
+                      child: const Icon(
+                        Icons.search,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                   ),
                 ],
@@ -500,13 +512,17 @@ class _ScannerScreenState extends State<ScannerScreen>
     );
   }
 
-  Widget _buildScannerError(BuildContext context, MobileScannerException error) {
+  Widget _buildScannerError(
+    BuildContext context,
+    MobileScannerException error,
+  ) {
     String errorMessage;
     IconData errorIcon = Icons.error_outline;
 
     switch (error.errorCode) {
       case MobileScannerErrorCode.permissionDenied:
-        errorMessage = 'Camera permission was denied.\nPlease enable it in your device settings.';
+        errorMessage =
+            'Camera permission was denied.\nPlease enable it in your device settings.';
         errorIcon = Icons.no_photography_outlined;
         break;
       case MobileScannerErrorCode.unsupported:
@@ -514,7 +530,8 @@ class _ScannerScreenState extends State<ScannerScreen>
         errorIcon = Icons.camera_alt_outlined;
         break;
       default:
-        errorMessage = 'Scanner unavailable.\nPlease restart the scanner or app.';
+        errorMessage =
+            'Scanner unavailable.\nPlease restart the scanner or app.';
         break;
     }
 
