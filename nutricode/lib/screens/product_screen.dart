@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
+import '../providers/allergen_provider.dart';
 import '../services/open_food_facts_service.dart';
 import '../utils/ingredient_classifier.dart';
 import '../widgets/ingredient_info_sheet.dart';
@@ -510,9 +511,17 @@ class _IngredientItemWidgetState extends State<_IngredientItemWidget> {
     }
   }
 
+  bool _matchesUserAllergen() {
+    final text = _getDisplayText().toLowerCase();
+    return AllergenProvider.instance.selectedAllergens.any(
+      (a) => text.contains(a),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final color = _getLevelColor(widget.effectiveLevel);
+    final isUserAllergen = _matchesUserAllergen();
     final hasSubs = widget.ingredient.subIngredients.isNotEmpty;
     final hasDesc = hasIngredientDescription(
       _getDisplayText(),
@@ -568,6 +577,26 @@ class _IngredientItemWidgetState extends State<_IngredientItemWidget> {
                           ),
                         ),
                       ),
+                      if (isUserAllergen) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.red.shade300),
+                          ),
+                          child: Text(
+                            '⚠ Allergen',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red.shade700,
+                            ),
+                          ),
+                        ),
+                      ],
                       if (canShowInfo) ...[
                         const SizedBox(width: 4),
                         GestureDetector(

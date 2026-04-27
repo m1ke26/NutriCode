@@ -2,6 +2,7 @@
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/product_provider.dart';
+import '../providers/allergen_provider.dart';
 import '../utils/ingredient_classifier.dart';
 import 'product_screen.dart';
 
@@ -11,8 +12,13 @@ class VerdictScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ProductProvider()..fetchProduct(barcode),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => ProductProvider()..fetchProduct(barcode),
+        ),
+        ChangeNotifierProvider.value(value: AllergenProvider.instance),
+      ],
       child: _VerdictScreenContent(barcode: barcode),
     );
   }
@@ -164,6 +170,56 @@ class _VerdictScreenContent extends StatelessWidget {
     );
   }
 
+  // ── Allergen banner ───────────────────────────────────────────────
+  Widget? _buildAllergenBanner(BuildContext context, ProductProvider provider) {
+    final allergenProvider = context.watch<AllergenProvider>();
+    final userAllergens = allergenProvider.selectedAllergens;
+    if (userAllergens.isEmpty) return null;
+
+    final product = provider.product!;
+    final matches = product.allergens
+        .where((a) => userAllergens.contains(a))
+        .toList();
+
+    if (matches.isNotEmpty) {
+      final label = matches
+          .map((a) => AllergenProvider.displayName(a).toUpperCase())
+          .join(', ');
+      return _AllergenBanner(
+        color: Colors.red.shade700,
+        icon: Icons.warning_amber_rounded,
+        message: '⚠️ Contains $label — matches your allergen profile',
+        action: TextButton(
+          onPressed: () async {
+            final query = Uri.encodeComponent(
+              '${product.name ?? 'product'} alternatives without ${matches.first}',
+            );
+            final url = Uri.parse('https://www.google.com/search?q=$query');
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url, mode: LaunchMode.externalApplication);
+            }
+          },
+          style: TextButton.styleFrom(foregroundColor: Colors.red.shade700),
+          child: const Text(
+            'See Alternatives',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      );
+    }
+
+    if (product.allergens.isEmpty) {
+      return const _AllergenBanner(
+        color: Color(0xFFF39C12),
+        icon: Icons.help_outline,
+        message: '⚠️ Allergen data unavailable — check the physical label',
+        action: null,
+      );
+    }
+
+    return null;
+  }
+
   // ── Success → green / yellow / red verdict ────────────────────────
   Widget _buildVerdictState(BuildContext context, ProductProvider provider) {
     final product = provider.product!;
@@ -277,7 +333,19 @@ class _VerdictScreenContent extends StatelessWidget {
                 color: circleColor,
               ),
             ),
-            const SizedBox(height: 36),
+            const SizedBox(height: 20),
+
+            // Allergen alert banner
+            Builder(builder: (context) {
+              final banner = _buildAllergenBanner(context, provider);
+              if (banner == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: banner,
+              );
+            }),
+
+            const SizedBox(height: 16),
 
             // View Details button — only shown when ingredients are available
             if (hasIngredients) ...[
@@ -341,6 +409,60 @@ class _VerdictScreenContent extends StatelessWidget {
           ),
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
+      ),
+    );
+  }
+}
+
+class _AllergenBanner extends StatelessWidget {
+  final Color color;
+  final IconData icon;
+  final String message;
+  final Widget? action;
+
+  const _AllergenBanner({
+    required this.color,
+    required this.icon,
+    required this.message,
+    required this.action,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withOpacity(0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  message,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (action != null) ...[
+            const SizedBox(height: 8),
+            Align(alignment: Alignment.centerRight, child: action!),
+          ],
+        ],
       ),
     );
   }

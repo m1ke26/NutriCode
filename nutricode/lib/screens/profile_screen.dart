@@ -1,7 +1,28 @@
 import 'package:flutter/material.dart';
+import '../providers/allergen_provider.dart';
+import 'allergen_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    AllergenProvider.instance.addListener(_onAllergenChange);
+  }
+
+  @override
+  void dispose() {
+    AllergenProvider.instance.removeListener(_onAllergenChange);
+    super.dispose();
+  }
+
+  void _onAllergenChange() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
@@ -64,11 +85,7 @@ class ProfileScreen extends StatelessWidget {
                     'Review your previously scanned products',
                   ),
                   const SizedBox(height: 12),
-                  _buildFeaturePreview(
-                    Icons.restaurant_menu,
-                    'Dietary Preferences',
-                    'Set allergens and dietary restrictions',
-                  ),
+                  _buildAllergenCard(context),
                   const SizedBox(height: 12),
                   _buildFeaturePreview(
                     Icons.settings_outlined,
@@ -79,6 +96,69 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAllergenCard(BuildContext context) {
+    final count = AllergenProvider.instance.selectedAllergens.length;
+    final subtitle = count == 0
+        ? 'None configured — tap to set up'
+        : '$count allergen${count == 1 ? '' : 's'} configured';
+
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AllergenScreen()),
+      ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1B998B).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.restaurant_menu,
+                  color: Color(0xFF1B998B), size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'My Allergens',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2C3E50),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: count > 0
+                          ? const Color(0xFF1B998B)
+                          : Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: Color(0xFF1B998B)),
+          ],
         ),
       ),
     );
