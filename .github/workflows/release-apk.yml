@@ -1,0 +1,41 @@
+name: Build and Upload Release APK
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Build APK and Upload
+    runs-on: ubuntu-latest
+    
+    # Required permission to upload assets to a GitHub Release
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17' # Java 17 is standard for modern Android builds
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Release APK
+        run: flutter build apk --release
+
+      - name: Upload APK to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # This is the default output path for a Flutter APK
+          files: build/app/outputs/flutter-apk/app-release.apk
