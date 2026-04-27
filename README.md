@@ -34,6 +34,7 @@ Thank you!
 * Miguel Mimoso (up202407610@up.pt)
 * Vasco Guimarães (up202403604@up.pt)
 * Victor Gomez (up202406138@up.pt)
+* Rodrigo Pina (up202404436@up.pt)
 
 ---
 ## Business Modelling
