@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../providers/allergen_provider.dart';
+import '../providers/vegan_provider.dart';
 import 'allergen_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -13,16 +14,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    AllergenProvider.instance.addListener(_onAllergenChange);
+    AllergenProvider.instance.addListener(_onProviderChange);
+    VeganProvider.instance.addListener(_onProviderChange);
   }
 
   @override
   void dispose() {
-    AllergenProvider.instance.removeListener(_onAllergenChange);
+    AllergenProvider.instance.removeListener(_onProviderChange);
+    VeganProvider.instance.removeListener(_onProviderChange);
     super.dispose();
   }
 
-  void _onAllergenChange() => setState(() {});
+  void _onProviderChange() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +89,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 12),
                   _buildAllergenCard(context),
+                  const SizedBox(height: 12),
+                  _buildVeganCard(),
                   const SizedBox(height: 12),
                   _buildFeaturePreview(
                     Icons.settings_outlined,
@@ -160,6 +165,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const Icon(Icons.chevron_right, color: Color(0xFF1B998B)),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildVeganCard() {
+    final isEnabled = VeganProvider.instance.isEnabled;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.green.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.eco, color: Colors.green, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Vegan Mode',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2C3E50),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  isEnabled
+                      ? 'Showing vegan status on products'
+                      : 'Tap to enable vegan detection',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isEnabled ? Colors.green : Colors.grey[500],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: isEnabled,
+            onChanged: (_) => VeganProvider.instance.toggle(),
+            activeThumbColor: Colors.green,
+            activeTrackColor: Colors.green.withValues(alpha: 0.4),
+          ),
+        ],
       ),
     );
   }

@@ -1,9 +1,11 @@
-  import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/product_provider.dart';
 import '../providers/allergen_provider.dart';
+import '../providers/vegan_provider.dart';
 import '../utils/ingredient_classifier.dart';
+import '../utils/vegan_classifier.dart';
 import 'product_screen.dart';
 
 import '../services/open_food_facts_service.dart';
@@ -18,7 +20,8 @@ class VerdictScreen extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => ProductProvider(service: service)..fetchProduct(barcode),
+          create: (_) =>
+              ProductProvider(service: service)..fetchProduct(barcode),
         ),
         ChangeNotifierProvider.value(value: AllergenProvider.instance),
       ],
@@ -26,7 +29,6 @@ class VerdictScreen extends StatelessWidget {
     );
   }
 }
-
 
 class _VerdictScreenContent extends StatelessWidget {
   final String barcode;
@@ -38,10 +40,7 @@ class _VerdictScreenContent extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('NutriCode'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('NutriCode'), centerTitle: true),
       body: _buildBody(context, provider),
     );
   }
@@ -121,7 +120,11 @@ class _VerdictScreenContent extends StatelessWidget {
                 border: Border.all(color: const Color(0xFF8B4513), width: 6),
               ),
               child: const Center(
-                child: Icon(Icons.help_outline, size: 64, color: Color(0xFF8B4513)),
+                child: Icon(
+                  Icons.help_outline,
+                  size: 64,
+                  color: Color(0xFF8B4513),
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -224,6 +227,59 @@ class _VerdictScreenContent extends StatelessWidget {
     return null;
   }
 
+  // ── Vegan banner ─────────────────────────────────────────────────
+  Widget? _buildVeganBanner(BuildContext context, ProductProvider provider) {
+    if (!VeganProvider.instance.isEnabled) return null;
+
+    final product = provider.product!;
+
+    // No ingredient data — yellow warning
+    if (product.ingredients.isEmpty) {
+      return const _AllergenBanner(
+        color: Color(0xFFF39C12),
+        icon: Icons.help_outline,
+        message: '🌿 Vegan status unknown — ingredient data unavailable',
+        action: null,
+      );
+    }
+
+    final nonVegan = getNonVeganIngredients(product.ingredients);
+
+    if (nonVegan.isNotEmpty) {
+      // NOT vegan — red banner
+      final label = nonVegan.map((i) => i.toUpperCase()).join(', ');
+      return _AllergenBanner(
+        color: Colors.red.shade700,
+        icon: Icons.eco,
+        message: '🌿 Not Vegan — contains $label',
+        action: TextButton(
+          onPressed: () async {
+            final query = Uri.encodeComponent(
+              'vegan alternatives to ${product.name ?? 'product'}',
+            );
+            final url = Uri.parse('https://www.google.com/search?q=$query');
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url, mode: LaunchMode.externalApplication);
+            }
+          },
+          style: TextButton.styleFrom(foregroundColor: Colors.red.shade700),
+          child: const Text(
+            'See Vegan Alternatives',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      );
+    }
+
+    // All vegan — green banner
+    return const _AllergenBanner(
+      color: Colors.green,
+      icon: Icons.eco,
+      message: '✅ This product appears to be vegan',
+      action: null,
+    );
+  }
+
   // ── Success → green / yellow / red verdict ────────────────────────
   Widget _buildVerdictState(BuildContext context, ProductProvider provider) {
     final product = provider.product!;
@@ -320,9 +376,7 @@ class _VerdictScreenContent extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Center(
-                  child: Icon(icon, size: 64, color: circleColor),
-                ),
+                child: Center(child: Icon(icon, size: 64, color: circleColor)),
               ),
             ),
             const SizedBox(height: 24),
@@ -340,14 +394,28 @@ class _VerdictScreenContent extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Allergen alert banner
-            Builder(builder: (context) {
-              final banner = _buildAllergenBanner(context, provider);
-              if (banner == null) return const SizedBox.shrink();
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: banner,
-              );
-            }),
+            Builder(
+              builder: (context) {
+                final banner = _buildAllergenBanner(context, provider);
+                if (banner == null) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: banner,
+                );
+              },
+            ),
+
+            // Vegan banner
+            Builder(
+              builder: (context) {
+                final banner = _buildVeganBanner(context, provider);
+                if (banner == null) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: banner,
+                );
+              },
+            ),
 
             const SizedBox(height: 16),
 
@@ -377,7 +445,10 @@ class _VerdictScreenContent extends StatelessWidget {
               label: const Text('Scan again'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.blueGrey,
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 14,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),

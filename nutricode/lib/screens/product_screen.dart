@@ -4,6 +4,8 @@ import '../providers/product_provider.dart';
 import '../providers/allergen_provider.dart';
 import '../services/open_food_facts_service.dart';
 import '../utils/ingredient_classifier.dart';
+import '../utils/vegan_classifier.dart';
+import '../providers/vegan_provider.dart';
 import '../widgets/ingredient_info_sheet.dart';
 
 class ProductScreen extends StatelessWidget {
@@ -190,6 +192,10 @@ class _ProductScreenContent extends StatelessWidget {
 
           const SizedBox(height: 32),
 
+          // Vegan badge — shown only when vegan mode is enabled
+          if (VeganProvider.instance.isEnabled && product.ingredients.isNotEmpty)
+            Center(child: _buildVeganBadge(product.ingredients)),
+
           if (product.nutriScore != null && product.nutriScore!.isNotEmpty)
             Center(child: _buildNutriScore(product.nutriScore!)),
             
@@ -240,6 +246,48 @@ class _ProductScreenContent extends StatelessWidget {
               ),
             ),
           ],
+
+        ],
+      ),
+    );
+  }
+
+  // ── Vegan badge ────────────────────────────────────────────────────
+  Widget _buildVeganBadge(List<Ingredient> ingredients) {
+    final nonVegan = getNonVeganIngredients(ingredients);
+    final vegan = nonVegan.isEmpty;
+    final color = vegan ? Colors.green : Colors.red;
+    final icon = vegan ? Icons.check_circle_outline : Icons.cancel_outlined;
+    final label = vegan ? 'VEGAN' : 'NOT VEGAN';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.35),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 22),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 16,
+              letterSpacing: 1.5,
+            ),
+          ),
         ],
       ),
     );
@@ -518,10 +566,16 @@ class _IngredientItemWidgetState extends State<_IngredientItemWidget> {
     );
   }
 
+  bool _isNonVeganIngredient() {
+    if (!VeganProvider.instance.isEnabled) return false;
+    return isIngredientNonVegan(widget.ingredient);
+  }
+
   @override
   Widget build(BuildContext context) {
     final color = _getLevelColor(widget.effectiveLevel);
     final isUserAllergen = _matchesUserAllergen();
+    final isNonVegan = _isNonVeganIngredient();
     final hasSubs = widget.ingredient.subIngredients.isNotEmpty;
     final hasDesc = hasIngredientDescription(
       _getDisplayText(),
@@ -593,6 +647,26 @@ class _IngredientItemWidgetState extends State<_IngredientItemWidget> {
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                               color: Colors.red.shade700,
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (isNonVegan) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.green.shade400),
+                          ),
+                          child: Text(
+                            '🌿 Not Vegan',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green.shade800,
                             ),
                           ),
                         ),
