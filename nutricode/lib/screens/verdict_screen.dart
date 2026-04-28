@@ -6,16 +6,19 @@ import '../providers/allergen_provider.dart';
 import '../utils/ingredient_classifier.dart';
 import 'product_screen.dart';
 
+import '../services/open_food_facts_service.dart';
+
 class VerdictScreen extends StatelessWidget {
   final String barcode;
-  const VerdictScreen({super.key, required this.barcode});
+  final OpenFoodFactsService? service;
+  const VerdictScreen({super.key, required this.barcode, this.service});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => ProductProvider()..fetchProduct(barcode),
+          create: (_) => ProductProvider(service: service)..fetchProduct(barcode),
         ),
         ChangeNotifierProvider.value(value: AllergenProvider.instance),
       ],
@@ -23,6 +26,7 @@ class VerdictScreen extends StatelessWidget {
     );
   }
 }
+
 
 class _VerdictScreenContent extends StatelessWidget {
   final String barcode;

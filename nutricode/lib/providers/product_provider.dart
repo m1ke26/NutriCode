@@ -6,6 +6,10 @@ enum ProductState { initial, loading, success, error, notFound }
 class ProductProvider with ChangeNotifier {
   final Map<String, ProductResult> _cache = {};
   bool _isDisposed = false;
+  final OpenFoodFactsService _service;
+
+  ProductProvider({OpenFoodFactsService? service})
+      : _service = service ?? OpenFoodFactsService();
 
   ProductState _state = ProductState.initial;
   ProductState get state => _state;
@@ -49,9 +53,9 @@ class ProductProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final result = await OpenFoodFactsService.fetchProduct(cleaned).timeout(
-        const Duration(seconds: 15),
-      );
+      final result = await _service.fetchProduct(cleaned).timeout(
+            const Duration(seconds: 15),
+          );
 
       if (_isDisposed) return;
 
@@ -76,3 +80,4 @@ class ProductProvider with ChangeNotifier {
     notifyListeners();
   }
 }
+

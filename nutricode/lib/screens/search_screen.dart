@@ -5,18 +5,27 @@ import '../services/product_search_service.dart';
 import 'verdict_screen.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  final ProductSearchService? service;
+  const SearchScreen({super.key, this.service});
 
   @override
   State<SearchScreen> createState() => SearchScreenState();
 }
 
 class SearchScreenState extends State<SearchScreen> {
-  final TextEditingController _searchController = TextEditingController();
-  final ProductSearchService _searchService = ProductSearchService();
+  late final TextEditingController _searchController;
+  late final ProductSearchService _searchService;
   final FocusNode _focusNode = FocusNode();
 
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+    _searchService = widget.service ?? ProductSearchService();
+  }
+
   List<ProductSearchResult> _results = [];
+
   bool _isLoading = false;
   bool _hasSearched = false;
   String? _errorMessage;
