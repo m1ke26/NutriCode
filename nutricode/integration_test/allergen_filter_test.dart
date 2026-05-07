@@ -62,8 +62,9 @@ void main() {
         await tester.pumpAndSettle(); // Wait for animations
 
         // Then: a red alert banner shows the allergen name
-        expect(find.textContaining('GLUTEN'), findsOneWidget);
-        expect(find.text('See Alternatives'), findsOneWidget);
+        expect(find.text('Allergens Detected'), findsOneWidget);
+        expect(find.text('Gluten'), findsOneWidget);
+        expect(find.text('Find Alternatives'), findsOneWidget);
       },
     );
 
@@ -107,13 +108,11 @@ void main() {
         await tester.pumpAndSettle();
 
         // Then: a yellow warning about missing allergen data is shown
-        expect(
-          find.text('⚠️ Allergen data unavailable — check the physical label'),
-          findsOneWidget,
-        );
+        expect(find.text('Allergen data unavailable'), findsOneWidget);
+        expect(find.text('Check the physical label'), findsOneWidget);
         
         // And: no red banner
-        expect(find.textContaining('matches your allergen profile'), findsNothing);
+        expect(find.text('Allergens Detected'), findsNothing);
       },
     );
   });
