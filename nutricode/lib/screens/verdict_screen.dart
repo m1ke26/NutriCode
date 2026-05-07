@@ -177,7 +177,7 @@ class _VerdictScreenContent extends StatelessWidget {
     );
   }
 
-  // ── Allergen banner ───────────────────────────────────────────────
+  // ── Allergen status card ────────────────────────────────────────
   Widget? _buildAllergenBanner(BuildContext context, ProductProvider provider) {
     final allergenProvider = context.watch<AllergenProvider>();
     final userAllergens = allergenProvider.selectedAllergens;
@@ -189,14 +189,18 @@ class _VerdictScreenContent extends StatelessWidget {
         .toList();
 
     if (matches.isNotEmpty) {
-      final label = matches
-          .map((a) => AllergenProvider.displayName(a).toUpperCase())
-          .join(', ');
-      return _AllergenBanner(
-        color: Colors.red.shade700,
+      final allergenNames = matches
+          .map((a) => AllergenProvider.displayName(a))
+          .toList();
+      return _StatusCard(
+        type: _StatusType.danger,
         icon: Icons.warning_amber_rounded,
-        message: '⚠️ Contains $label — matches your allergen profile',
-        action: TextButton(
+        title: 'Allergens Detected',
+        tags: allergenNames,
+        action: _pillButton(
+          label: 'Find Alternatives',
+          icon: Icons.search,
+          color: const Color(0xFFE74C3C),
           onPressed: () async {
             final query = Uri.encodeComponent(
               '${product.name ?? 'product'} alternatives without ${matches.first}',
@@ -206,53 +210,53 @@ class _VerdictScreenContent extends StatelessWidget {
               await launchUrl(url, mode: LaunchMode.externalApplication);
             }
           },
-          style: TextButton.styleFrom(foregroundColor: Colors.red.shade700),
-          child: const Text(
-            'See Alternatives',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
         ),
       );
     }
 
     if (product.allergens.isEmpty) {
-      return const _AllergenBanner(
-        color: Color(0xFFF39C12),
+      return const _StatusCard(
+        type: _StatusType.warning,
         icon: Icons.help_outline,
-        message: '⚠️ Allergen data unavailable — check the physical label',
-        action: null,
+        title: 'Allergen data unavailable',
+        subtitle: 'Check the physical label',
       );
     }
 
-    return null;
+    return const _StatusCard(
+      type: _StatusType.safe,
+      icon: Icons.shield_outlined,
+      title: 'No Allergens Detected',
+    );
   }
 
-  // ── Vegan banner ─────────────────────────────────────────────────
+  // ── Vegan status card ──────────────────────────────────────────
   Widget? _buildVeganBanner(BuildContext context, ProductProvider provider) {
     if (!VeganProvider.instance.isEnabled) return null;
 
     final product = provider.product!;
 
-    // No ingredient data — yellow warning
     if (product.ingredients.isEmpty) {
-      return const _AllergenBanner(
-        color: Color(0xFFF39C12),
-        icon: Icons.help_outline,
-        message: '🌿 Vegan status unknown — ingredient data unavailable',
-        action: null,
+      return const _StatusCard(
+        type: _StatusType.warning,
+        icon: Icons.eco_outlined,
+        title: 'Vegan status unknown',
+        subtitle: 'Ingredient data unavailable',
       );
     }
 
     final nonVegan = getNonVeganIngredients(product.ingredients);
 
     if (nonVegan.isNotEmpty) {
-      // NOT vegan — red banner
-      final label = nonVegan.map((i) => i.toUpperCase()).join(', ');
-      return _AllergenBanner(
-        color: Colors.red.shade700,
+      return _StatusCard(
+        type: _StatusType.danger,
         icon: Icons.eco,
-        message: '🌿 Not Vegan — contains $label',
-        action: TextButton(
+        title: 'Not Vegan',
+        tags: nonVegan,
+        action: _pillButton(
+          label: 'Find Alternatives',
+          icon: Icons.search,
+          color: const Color(0xFFE74C3C),
           onPressed: () async {
             final query = Uri.encodeComponent(
               'vegan alternatives to ${product.name ?? 'product'}',
@@ -262,21 +266,35 @@ class _VerdictScreenContent extends StatelessWidget {
               await launchUrl(url, mode: LaunchMode.externalApplication);
             }
           },
-          style: TextButton.styleFrom(foregroundColor: Colors.red.shade700),
-          child: const Text(
-            'See Vegan Alternatives',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
         ),
       );
     }
 
-    // All vegan — green banner
-    return const _AllergenBanner(
-      color: Colors.green,
+    return const _StatusCard(
+      type: _StatusType.safe,
       icon: Icons.eco,
-      message: '✅ This product appears to be vegan',
-      action: null,
+      title: 'Vegan Friendly',
+    );
+  }
+
+  // ── Small pill-shaped action button ─────────────────────────────
+  Widget _pillButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
+    return TextButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 14),
+      label: Text(label),
+      style: TextButton.styleFrom(
+        foregroundColor: Colors.white,
+        backgroundColor: color,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+      ),
     );
   }
 
@@ -316,7 +334,8 @@ class _VerdictScreenContent extends StatelessWidget {
       }
     }
 
-    return Center(
+    return SingleChildScrollView(
+      child: Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
@@ -457,6 +476,7 @@ class _VerdictScreenContent extends StatelessWidget {
             ),
           ],
         ),
+        ),
       ),
     );
   }
@@ -489,54 +509,149 @@ class _VerdictScreenContent extends StatelessWidget {
   }
 }
 
-class _AllergenBanner extends StatelessWidget {
-  final Color color;
+enum _StatusType { safe, warning, danger }
+
+class _StatusCard extends StatelessWidget {
+  final _StatusType type;
   final IconData icon;
-  final String message;
+  final String title;
+  final String? subtitle;
+  final List<String>? tags;
   final Widget? action;
 
-  const _AllergenBanner({
-    required this.color,
+  const _StatusCard({
+    required this.type,
     required this.icon,
-    required this.message,
-    required this.action,
+    required this.title,
+    this.subtitle,
+    this.tags,
+    this.action,
   });
 
   @override
   Widget build(BuildContext context) {
+    final Color primary;
+    final Color bg;
+    final Color border;
+    final Color iconBg;
+
+    switch (type) {
+      case _StatusType.safe:
+        primary = const Color(0xFF27AE60);
+        bg = const Color(0xFFF0FFF4);
+        border = const Color(0xFFB7EBC9);
+        iconBg = const Color(0xFFD5F5E3);
+        break;
+      case _StatusType.warning:
+        primary = const Color(0xFFF39C12);
+        bg = const Color(0xFFFFF9E6);
+        border = const Color(0xFFF7DC6F);
+        iconBg = const Color(0xFFFEF3C7);
+        break;
+      case _StatusType.danger:
+        primary = const Color(0xFFE74C3C);
+        bg = const Color(0xFFFFF5F5);
+        border = const Color(0xFFFCA5A5);
+        iconBg = const Color(0xFFFEE2E2);
+        break;
+    }
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.4)),
+        color: bg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: border, width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: color, size: 20),
-              const SizedBox(width: 10),
+              // Icon badge
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: border),
+                ),
+                child: Icon(icon, color: primary, size: 20),
+              ),
+              const SizedBox(width: 12),
+              // Title & subtitle
               Expanded(
-                child: Text(
-                  message,
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    height: 1.4,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: primary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                      ),
+                    ),
+                    if (subtitle != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          subtitle!,
+                          style: TextStyle(
+                            color: primary.withOpacity(0.7),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],
           ),
-          if (action != null) ...[
-            const SizedBox(height: 8),
-            Align(alignment: Alignment.centerRight, child: action!),
-          ],
+          // Tag chips for detected items
+          if (tags != null && tags!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: tags!.map((tag) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: primary.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: primary.withOpacity(0.3),
+                      ),
+                    ),
+                    child: Text(
+                      tag,
+                      style: TextStyle(
+                        color: primary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          // Action button
+          if (action != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: action!,
+              ),
+            ),
         ],
       ),
     );
