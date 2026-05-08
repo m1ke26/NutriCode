@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "709830412742",
+    "project_id": "nutricode-81ad6",
+    "storage_bucket": "nutricode-81ad6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:709830412742:android:abe379e216738b3dca0ac7",
+        "android_client_info": {
+          "package_name": "com.nutricode.nutricode"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_zt1GpwFW5zwlJ0N414VMTCetSkDl2PM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

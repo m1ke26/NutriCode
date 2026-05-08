@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
 
 class AllergenProvider extends ChangeNotifier {
   static final AllergenProvider instance = AllergenProvider._();
   AllergenProvider._();
+
+  final AuthService _authService = AuthService();
 
   static const List<String> commonAllergens = [
     'celery',
@@ -38,21 +41,34 @@ class AllergenProvider extends ChangeNotifier {
     'sulphites': 'Sulphites',
   };
 
-  final Set<String> _selected = {};
+  Set<String> _selected = {};
 
   Set<String> get selectedAllergens => Set.unmodifiable(_selected);
 
   bool isSelected(String allergen) => _selected.contains(allergen);
 
-  void toggle(String allergen) {
+  // Initialize from Firestore
+  Future<void> loadFromFirestore() async {
+    final userData = await _authService.getUserData();
+    if (userData != null) {
+      _selected = Set<String>.from(userData.allergens);
+      notifyListeners();
+    }
+  }
+
+  void toggle(String allergen) async {
     if (_selected.contains(allergen)) {
       _selected.remove(allergen);
     } else {
       _selected.add(allergen);
     }
     notifyListeners();
+    
+    // Save to Firestore
+    await _authService.updateProfile(allergens: _selected.toList());
   }
 
   static String displayName(String allergen) =>
       _displayNames[allergen] ?? allergen;
 }
+

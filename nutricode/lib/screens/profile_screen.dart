@@ -1,6 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../providers/allergen_provider.dart';
 import '../providers/vegan_provider.dart';
+import '../services/auth_service.dart';
+import '../models/user_model.dart';
 import 'allergen_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -11,9 +15,16 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final AuthService _authService = AuthService();
+  UserModel? _userModel;
+  bool _isLoading = true;
+  final TextEditingController _nameController = TextEditingController();
+  bool _isEditingName = false;
+
   @override
   void initState() {
     super.initState();
+    _loadUserData();
     AllergenProvider.instance.addListener(_onProviderChange);
     VeganProvider.instance.addListener(_onProviderChange);
   }
@@ -22,86 +33,411 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void dispose() {
     AllergenProvider.instance.removeListener(_onProviderChange);
     VeganProvider.instance.removeListener(_onProviderChange);
+    _nameController.dispose();
     super.dispose();
   }
 
   void _onProviderChange() => setState(() {});
 
+  Future<void> _showLogoutConfirmation(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        title: const Row(
+          children: [
+            Icon(Icons.logout_rounded, color: Colors.redAccent, size: 28),
+            SizedBox(width: 12),
+            Text(
+              'Logout',
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF2C3E50),
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to log out of your NutriCode account?',
+          style: TextStyle(
+            fontSize: 15,
+            color: Color(0xFF5D6D7E),
+            height: 1.5,
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      side: BorderSide(color: Colors.grey.shade200),
+                    ),
+                  ),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: Color(0xFF7F8C8D),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    AuthService().signOut();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  child: const Text(
+                    'Logout',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _loadUserData() async {
+    setState(() => _isLoading = true);
+    await AllergenProvider.instance.loadFromFirestore();
+    await VeganProvider.instance.loadFromFirestore();
+    final user = await _authService.getUserData();
+    if (mounted) {
+      setState(() {
+        _userModel = user;
+        _nameController.text = user?.name ?? '';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _updateName() async {
+    if (_nameController.text.trim().isEmpty) return;
+    
+    setState(() => _isLoading = true);
+    await _authService.updateProfile(name: _nameController.text.trim());
+    await _loadUserData();
+    setState(() {
+      _isEditingName = false;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (image != null) {
+      setState(() => _isLoading = true);
+      try {
+        final url = await _authService.uploadProfilePicture(File(image.path));
+        await _authService.updateProfile(photoUrl: url);
+        await _loadUserData();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error uploading image: $e')),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isLoading && _userModel == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator(color: Color(0xFF1B998B))),
+      );
+    }
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Avatar placeholder
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1B998B).withOpacity(0.1),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xFF1B998B).withOpacity(0.3),
-                        width: 3,
+      backgroundColor: const Color(0xFFF8FAFB),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Header with Gradient
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF1B998B), Color(0xFF15796E)],
+                    ),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(40),
+                      bottomRight: Radius.circular(40),
+                    ),
+                  ),
+                ),
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'My Profile',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => _showLogoutConfirmation(context),
+                          icon: const Icon(Icons.logout_rounded, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Avatar Positioned
+                Positioned(
+                  bottom: -50,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 15,
+                              offset: Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 55,
+                              backgroundColor: const Color(0xFFF0F4F4),
+                              backgroundImage: _userModel?.photoUrl != null
+                                  ? NetworkImage(_userModel!.photoUrl!)
+                                  : null,
+                              child: _userModel?.photoUrl == null
+                                  ? const Icon(
+                                      Icons.person_rounded,
+                                      size: 50,
+                                      color: Color(0xFF1B998B),
+                                    )
+                                  : null,
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF1B998B),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.camera_alt_rounded,
+                                  size: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    child: const Icon(
-                      Icons.person_outline,
-                      size: 48,
-                      color: Color(0xFF1B998B),
-                    ),
                   ),
-                  const SizedBox(height: 24),
+                ),
+              ],
+            ),
 
-                  const Text(
-                    'Profile',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF2C3E50),
-                      letterSpacing: -0.5,
+            const SizedBox(height: 65),
+
+            // Name and Email
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                children: [
+                  if (_isEditingName)
+                    _buildNameEditor()
+                  else
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _userModel?.name ?? 'NutriCode User',
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF2C3E50),
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () => setState(() => _isEditingName = true),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1B998B).withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.edit_rounded, size: 16, color: Color(0xFF1B998B)),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 12),
-
+                  const SizedBox(height: 4),
                   Text(
-                    'Coming soon! Your profile settings,\ndietary preferences, and scan history\nwill appear here.',
-                    textAlign: TextAlign.center,
+                    _userModel?.email ?? '',
                     style: TextStyle(
                       fontSize: 15,
-                      height: 1.5,
                       color: Colors.grey[500],
+                      fontWeight: FontWeight.w500,
                     ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Feature cards preview
-                  _buildFeaturePreview(
-                    Icons.history,
-                    'Scan History',
-                    'Review your previously scanned products',
-                  ),
-                  const SizedBox(height: 12),
-                  _buildAllergenCard(context),
-                  const SizedBox(height: 12),
-                  _buildVeganCard(),
-                  const SizedBox(height: 12),
-                  _buildFeaturePreview(
-                    Icons.settings_outlined,
-                    'Settings',
-                    'Customize your NutriCode experience',
                   ),
                 ],
               ),
             ),
-          ),
+
+            const SizedBox(height: 32),
+
+            // Settings Sections
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'DIETARY PREFERENCES',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFFB0B0B0),
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildAllergenCard(context),
+                  const SizedBox(height: 12),
+                  _buildVeganCard(),
+                  
+                  const SizedBox(height: 32),
+                  
+                  const Text(
+                    'GENERAL',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFFB0B0B0),
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildFeaturePreview(
+                    Icons.history_rounded,
+                    'Scan History',
+                    'Coming soon!',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildFeaturePreview(
+                    Icons.settings_suggest_rounded,
+                    'App Settings',
+                    'Coming soon!',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildFeaturePreview(
+                    Icons.help_outline_rounded,
+                    'Help & Support',
+                    'Coming soon!',
+                  ),
+                  
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildNameEditor() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                hintText: 'Enter your name',
+                border: InputBorder.none,
+              ),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+              autofocus: true,
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.check_circle_rounded, color: Color(0xFF1B998B)),
+            onPressed: _updateName,
+          ),
+          IconButton(
+            icon: const Icon(Icons.cancel_rounded, color: Colors.grey),
+            onPressed: () => setState(() {
+              _isEditingName = false;
+              _nameController.text = _userModel?.name ?? '';
+            }),
+          ),
+        ],
       ),
     );
   }
@@ -109,8 +445,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildAllergenCard(BuildContext context) {
     final count = AllergenProvider.instance.selectedAllergens.length;
     final subtitle = count == 0
-        ? 'None configured — tap to set up'
-        : '$count allergen${count == 1 ? '' : 's'} configured';
+        ? 'No restrictions'
+        : '$count restriction${count == 1 ? '' : 's'} active';
 
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -119,24 +455,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.grey.shade200),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: const Color(0xFF1B998B).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(15),
               ),
-              child: const Icon(Icons.restaurant_menu,
-                  color: Color(0xFF1B998B), size: 22),
+              child: const Icon(Icons.no_food_rounded,
+                  color: Color(0xFF1B998B), size: 24),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,25 +486,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Text(
                     'My Allergens',
                     style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
                       color: Color(0xFF2C3E50),
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   Text(
                     subtitle,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 14,
                       color: count > 0
                           ? const Color(0xFF1B998B)
                           : Colors.grey[500],
+                      fontWeight: count > 0 ? FontWeight.w600 : FontWeight.normal,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: Color(0xFF1B998B)),
+            const Icon(Icons.chevron_right_rounded, color: Colors.grey),
           ],
         ),
       ),
@@ -173,23 +516,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final isEnabled = VeganProvider.instance.isEnabled;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.green.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+              color: Colors.green.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(15),
             ),
-            child: const Icon(Icons.eco, color: Colors.green, size: 22),
+            child: const Icon(Icons.eco_rounded, color: Colors.green, size: 24),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,29 +546,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const Text(
                   'Vegan Mode',
                   style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                     color: Color(0xFF2C3E50),
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 Text(
                   isEnabled
-                      ? 'Showing vegan status on products'
-                      : 'Tap to enable vegan detection',
+                      ? 'Detection active'
+                      : 'Disabled',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 14,
                     color: isEnabled ? Colors.green : Colors.grey[500],
+                    fontWeight: isEnabled ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
               ],
             ),
           ),
-          Switch(
+          Switch.adaptive(
             value: isEnabled,
             onChanged: (_) => VeganProvider.instance.toggle(),
-            activeThumbColor: Colors.green,
-            activeTrackColor: Colors.green.withValues(alpha: 0.4),
+            activeColor: Colors.green,
           ),
         ],
       ),
@@ -231,19 +580,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        color: Colors.white.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white, width: 2),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFF1B998B).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
+              color: Colors.grey.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: const Color(0xFF1B998B), size: 22),
+            child: Icon(icon, color: const Color(0xFF2C3E50).withOpacity(0.6), size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -252,26 +601,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF2C3E50),
+                    color: const Color(0xFF2C3E50).withOpacity(0.8),
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
                   style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[500],
+                    fontSize: 12,
+                    color: Colors.grey[400],
                   ),
                 ),
               ],
             ),
           ),
-          Icon(Icons.lock_outline, size: 18, color: Colors.grey[400]),
+          Icon(Icons.lock_rounded, size: 16, color: Colors.grey[300]),
         ],
       ),
     );
   }
+
 }
+

@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
+import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final VoidCallback onBack;
+  const LoginScreen({super.key, required this.onBack});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _authService = AuthService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -20,10 +23,144 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _login() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
+  void _showSnackbar(String message, {bool isError = true}) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isError ? Icons.error_outline : Icons.check_circle_outline,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: isError ? const Color(0xFFD90429) : const Color(0xFF1B998B),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: Colors.white.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+        elevation: 0,
+        margin: const EdgeInsets.all(20),
+      ),
+    );
+  }
+
+  void _login() async {
+    final emailOrUsername = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (emailOrUsername.isEmpty || password.isEmpty) {
+      _showSnackbar('Please enter both your details');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _authService.signIn(emailOrUsername: emailOrUsername, password: password);
+      // Success: AuthService stream in main.dart will handle navigation
+    } catch (e) {
+      if (mounted) {
+        _showSnackbar(e.toString());
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _loginWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      await _authService.signInWithGoogle();
+      // AuthWrapper will handle navigation
+    } catch (e) {
+      if (mounted) {
+        _showSnackbar(e.toString());
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _showForgotPasswordDialog() {
+    final resetController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1B2838),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Reset Password',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Enter your email address and we will send you a link to reset your password.',
+              style: TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+            const SizedBox(height: 20),
+            _buildTextField(
+              controller: resetController,
+              hint: 'Email Address',
+              icon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel', style: TextStyle(color: Colors.grey[400])),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final email = resetController.text.trim();
+              if (email.isEmpty) return;
+              
+              Navigator.pop(context);
+              setState(() => _isLoading = true);
+              
+              try {
+                await _authService.sendPasswordResetEmail(email);
+                if (mounted) {
+                  _showSnackbar(
+                    'Password reset email sent! Please check your inbox and your spam folder.',
+                    isError: false,
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  _showSnackbar(e.toString());
+                }
+              } finally {
+                if (mounted) {
+                  setState(() => _isLoading = false);
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1B998B),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Send Link'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -37,7 +174,15 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Column(
               children: [
-                const SizedBox(height: 60),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: widget.onBack,
+                  ),
+                ),
+                const SizedBox(height: 20),
 
                 // Logo area
                 Container(
@@ -79,11 +224,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 60),
 
-                // Email field
+                // Email or Username field
                 _buildTextField(
                   controller: _emailController,
-                  hint: 'Email',
-                  icon: Icons.email_outlined,
+                  hint: 'Email or Username',
+                  icon: Icons.person_outline,
                   keyboardType: TextInputType.emailAddress,
                 ),
 
@@ -110,7 +255,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: _showForgotPasswordDialog,
                     child: Text(
                       'Forgot password?',
                       style: TextStyle(color: Colors.grey[400], fontSize: 13),
@@ -125,7 +270,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: _login,
+                    onPressed: _isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1B998B),
                       foregroundColor: Colors.white,
@@ -135,7 +280,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       elevation: 0,
                       textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
                     ),
-                    child: const Text('Login'),
+                    child: _isLoading 
+                      ? const SizedBox(
+                          height: 20, 
+                          width: 20, 
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                        )
+                      : const Text('Login'),
                   ),
                 ),
 
@@ -160,8 +311,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   height: 52,
                   child: OutlinedButton.icon(
-                    onPressed: _login,
-                    icon: const Text('G', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    onPressed: _isLoading ? null : _loginWithGoogle,
+                    icon: _isLoading 
+                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('G', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                     label: const Text('Continue with Google'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -252,12 +405,14 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final _authService = AuthService();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -268,11 +423,73 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _register() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
+  void _showSnackbar(String message, {bool isError = true}) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isError ? Icons.error_outline : Icons.check_circle_outline,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: isError ? const Color(0xFFD90429) : const Color(0xFF1B998B),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: Colors.white.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+        elevation: 0,
+        margin: const EdgeInsets.all(20),
+      ),
     );
+  }
+
+  void _register() async {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirm = _confirmController.text.trim();
+
+    if (name.isEmpty || email.isEmpty || password.isEmpty || confirm.isEmpty) {
+      _showSnackbar('Please fill in all fields');
+      return;
+    }
+
+    if (password != confirm) {
+      _showSnackbar('Passwords do not match');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _authService.signUp(
+        email: email,
+        password: password,
+        name: name,
+      );
+      if (mounted) {
+        _showSnackbar('Welcome to NutriCode!', isError: false);
+        // Important: Pop the RegisterScreen so the AuthWrapper's HomeScreen is visible
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackbar(e.toString());
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -363,7 +580,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: _register,
+                    onPressed: _isLoading ? null : _register,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1B998B),
                       foregroundColor: Colors.white,
@@ -373,7 +590,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       elevation: 0,
                       textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
                     ),
-                    child: const Text('Register'),
+                    child: _isLoading 
+                      ? const SizedBox(
+                          height: 20, 
+                          width: 20, 
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                        )
+                      : const Text('Register'),
                   ),
                 ),
 
