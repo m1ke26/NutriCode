@@ -193,7 +193,7 @@ class _ProductScreenContent extends StatelessWidget {
           const SizedBox(height: 32),
 
           // Vegan badge — shown only when vegan mode is enabled
-          if (VeganProvider.instance.isEnabled && product.ingredients.isNotEmpty)
+          if (Provider.of<VeganProvider>(context).isEnabled && product.ingredients.isNotEmpty)
             Center(child: _buildVeganBadge(product.ingredients)),
 
           if (product.nutriScore != null && product.nutriScore!.isNotEmpty)
@@ -561,13 +561,15 @@ class _IngredientItemWidgetState extends State<_IngredientItemWidget> {
 
   bool _matchesUserAllergen() {
     final text = _getDisplayText().toLowerCase();
-    return AllergenProvider.instance.selectedAllergens.any(
+    final allergenProvider = Provider.of<AllergenProvider>(context, listen: false);
+    return allergenProvider.selectedAllergens.any(
       (a) => text.contains(a),
     );
   }
 
   bool _isNonVeganIngredient() {
-    if (!VeganProvider.instance.isEnabled) return false;
+    final veganProvider = Provider.of<VeganProvider>(context, listen: false);
+    if (!veganProvider.isEnabled) return false;
     return isIngredientNonVegan(widget.ingredient);
   }
 

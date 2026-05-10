@@ -17,31 +17,26 @@ class VerdictScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (_) =>
-              ProductProvider(service: service)..fetchProduct(barcode),
-        ),
-        ChangeNotifierProvider.value(value: AllergenProvider.instance),
-      ],
-      child: _VerdictScreenContent(barcode: barcode),
-    );
+    return _VerdictScreenContent(barcode: barcode, service: service);
   }
 }
 
 class _VerdictScreenContent extends StatelessWidget {
   final String barcode;
-  const _VerdictScreenContent({required this.barcode});
+  final OpenFoodFactsService? service;
+  const _VerdictScreenContent({required this.barcode, this.service});
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<ProductProvider>();
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text('NutriCode'), centerTitle: true),
-      body: _buildBody(context, provider),
+    return ChangeNotifierProvider(
+      create: (_) => ProductProvider(service: service)..fetchProduct(barcode),
+      child: Consumer<ProductProvider>(
+        builder: (context, provider, _) => Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(title: const Text('NutriCode'), centerTitle: true),
+          body: _buildBody(context, provider),
+        ),
+      ),
     );
   }
 
@@ -232,7 +227,8 @@ class _VerdictScreenContent extends StatelessWidget {
 
   // ── Vegan status card ──────────────────────────────────────────
   Widget? _buildVeganBanner(BuildContext context, ProductProvider provider) {
-    if (!VeganProvider.instance.isEnabled) return null;
+    final veganProvider = context.watch<VeganProvider>();
+    if (!veganProvider.isEnabled) return null;
 
     final product = provider.product!;
 

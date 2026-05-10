@@ -8,17 +8,18 @@ import 'package:http/testing.dart' as http_testing;
 import 'package:NutriCode/providers/allergen_provider.dart';
 import 'package:NutriCode/screens/verdict_screen.dart';
 import 'package:NutriCode/services/open_food_facts_service.dart';
+import 'integration_mock_helper.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('US05 — Allergen Filter (100% Reliable)', () {
-    
+    late MockAuthService mockAuth;
+    late AllergenProvider allergenProvider;
+
     setUp(() {
-      // Clear allergens before each test
-      for (final a in AllergenProvider.instance.selectedAllergens.toList()) {
-        AllergenProvider.instance.toggle(a);
-      }
+      mockAuth = MockAuthService();
+      allergenProvider = AllergenProvider(mockAuth);
     });
 
     testWidgets(
@@ -44,15 +45,17 @@ void main() {
         final mockService = OpenFoodFactsService(client: mockClient);
 
         // Given: user has configured Gluten as a personal allergen
-        AllergenProvider.instance.toggle('gluten');
+        allergenProvider.toggle('gluten');
 
         // When: the verdict screen loads
         await tester.pumpWidget(
-          MaterialApp(
-            home: VerdictScreen(
+          createTestableWidget(
+            VerdictScreen(
               barcode: '123',
               service: mockService,
             ),
+            authService: mockAuth,
+            allergenProvider: allergenProvider,
           ),
         );
         
@@ -91,15 +94,17 @@ void main() {
         final mockService = OpenFoodFactsService(client: mockClient);
 
         // Given: user has some allergen configured (so the banner logic triggers)
-        AllergenProvider.instance.toggle('nuts');
+        allergenProvider.toggle('nuts');
 
         // When: the verdict screen loads
         await tester.pumpWidget(
-          MaterialApp(
-            home: VerdictScreen(
+          createTestableWidget(
+            VerdictScreen(
               barcode: '456',
               service: mockService,
             ),
+            authService: mockAuth,
+            allergenProvider: allergenProvider,
           ),
         );
         

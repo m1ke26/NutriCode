@@ -4,6 +4,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:NutriCode/screens/product_screen.dart';
 import 'package:NutriCode/services/open_food_facts_service.dart';
 import 'package:NutriCode/providers/product_provider.dart';
+import 'integration_mock_helper.dart';
 
 // We create a simple mock provider to inject our test data
 class MockProductProvider extends ProductProvider {
@@ -43,8 +44,8 @@ void main() {
       final mockProvider = MockProductProvider(mockResult);
 
       // Pump the ProductScreen with the mock product
-      await tester.pumpWidget(MaterialApp(
-        home: ProductScreen(
+      await tester.pumpWidget(createTestableWidget(
+        ProductScreen(
           barcode: 'mock_barcode',
           provider: mockProvider,
         ),
@@ -96,8 +97,8 @@ void main() {
 
       final mockProvider = MockProductProvider(mockResult);
 
-      await tester.pumpWidget(MaterialApp(
-        home: ProductScreen(
+      await tester.pumpWidget(createTestableWidget(
+        ProductScreen(
           barcode: 'mock_barcode_2',
           provider: mockProvider,
         ),

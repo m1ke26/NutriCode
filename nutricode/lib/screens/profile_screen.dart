@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import '../providers/allergen_provider.dart';
 import '../providers/vegan_provider.dart';
 import '../services/auth_service.dart';
@@ -15,7 +16,9 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final AuthService _authService = AuthService();
+  late final AuthService _authService;
+  late final AllergenProvider _allergenProvider;
+  late final VeganProvider _veganProvider;
   UserModel? _userModel;
   bool _isLoading = true;
   final TextEditingController _nameController = TextEditingController();
@@ -24,15 +27,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _authService = Provider.of<AuthService>(context, listen: false);
+    _allergenProvider = Provider.of<AllergenProvider>(context, listen: false);
+    _veganProvider = Provider.of<VeganProvider>(context, listen: false);
     _loadUserData();
-    AllergenProvider.instance.addListener(_onProviderChange);
-    VeganProvider.instance.addListener(_onProviderChange);
+    _allergenProvider.addListener(_onProviderChange);
+    _veganProvider.addListener(_onProviderChange);
   }
 
   @override
   void dispose() {
-    AllergenProvider.instance.removeListener(_onProviderChange);
-    VeganProvider.instance.removeListener(_onProviderChange);
+    _allergenProvider.removeListener(_onProviderChange);
+    _veganProvider.removeListener(_onProviderChange);
     _nameController.dispose();
     super.dispose();
   }
@@ -95,7 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    AuthService().signOut();
+                    _authService.signOut();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.redAccent,
@@ -123,8 +129,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadUserData() async {
     setState(() => _isLoading = true);
-    await AllergenProvider.instance.loadFromFirestore();
-    await VeganProvider.instance.loadFromFirestore();
+    await _allergenProvider.loadFromFirestore();
+    await _veganProvider.loadFromFirestore();
     final user = await _authService.getUserData();
     if (mounted) {
       setState(() {
@@ -443,7 +449,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAllergenCard(BuildContext context) {
-    final count = AllergenProvider.instance.selectedAllergens.length;
+    final count = _allergenProvider.selectedAllergens.length;
     final subtitle = count == 0
         ? 'No restrictions'
         : '$count restriction${count == 1 ? '' : 's'} active';
@@ -513,7 +519,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildVeganCard() {
-    final isEnabled = VeganProvider.instance.isEnabled;
+    final isEnabled = _veganProvider.isEnabled;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -567,7 +573,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           Switch.adaptive(
             value: isEnabled,
-            onChanged: (_) => VeganProvider.instance.toggle(),
+            onChanged: (_) => _veganProvider.toggle(),
             activeColor: Colors.green,
           ),
         ],

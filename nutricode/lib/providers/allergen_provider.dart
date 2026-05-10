@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
 class AllergenProvider extends ChangeNotifier {
-  static final AllergenProvider instance = AllergenProvider._();
-  AllergenProvider._();
+  final AuthService _authService;
 
-  final AuthService _authService = AuthService();
+  AllergenProvider(this._authService);
 
   static const List<String> commonAllergens = [
     'celery',

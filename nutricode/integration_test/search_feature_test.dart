@@ -8,6 +8,7 @@ import 'package:http/testing.dart' as http_testing;
 import 'package:NutriCode/screens/home_screen.dart';
 import 'package:NutriCode/screens/search_screen.dart';
 import 'package:NutriCode/services/product_search_service.dart';
+import 'integration_mock_helper.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -36,20 +37,16 @@ void main() {
         final mockService = ProductSearchService(client: mockClient);
 
         // Load the HomeScreen
-        await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
+        await tester.pumpWidget(createTestableWidget(const HomeScreen()));
         await tester.pumpAndSettle();
 
         // Navigate to the Search tab
         await tester.tap(find.byKey(const Key('nav_search')));
         await tester.pumpAndSettle();
 
-        // Verify SearchScreen is shown (it should be, but let's be sure)
-        // Since HomeScreen might not automatically inject our mock service, 
-        // we can either navigate there or pump the SearchScreen directly.
-        // For a true integration test, we'll pump the MaterialApp with a custom SearchScreen.
-        
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(body: SearchScreen(service: mockService)),
+        // Navigate there or pump the SearchScreen directly with mock service
+        await tester.pumpWidget(createTestableWidget(
+            Scaffold(body: SearchScreen(service: mockService)),
         ));
         await tester.pumpAndSettle();
 
@@ -80,8 +77,8 @@ void main() {
         
         final mockService = ProductSearchService(client: mockClient);
 
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(body: SearchScreen(service: mockService)),
+        await tester.pumpWidget(createTestableWidget(
+            Scaffold(body: SearchScreen(service: mockService)),
         ));
         await tester.pumpAndSettle();
 

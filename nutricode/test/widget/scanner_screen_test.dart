@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:NutriCode/screens/scanner_screen.dart';
 import 'package:NutriCode/screens/verdict_screen.dart';
+import '../mock_helper.dart';
 
 const _mockProductResponse = '''
 {
@@ -26,7 +27,7 @@ void main() {
     testWidgets('scan button enters scanning mode and can be cancelled', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const MaterialApp(home: ScannerScreen()));
+      await tester.pumpWidget(createTestableWidget(const ScannerScreen()));
       await tester.pumpAndSettle();
 
       expect(find.text('Scan'), findsOneWidget);
@@ -50,7 +51,7 @@ void main() {
       WidgetTester tester,
     ) async {
       await HttpOverrides.runZoned(() async {
-        await tester.pumpWidget(const MaterialApp(home: ScannerScreen()));
+        await tester.pumpWidget(createTestableWidget(const ScannerScreen()));
         await tester.pumpAndSettle();
 
         final inputField = find.byType(TextField);
@@ -68,7 +69,7 @@ void main() {
     testWidgets('renders scanner screen elements correctly', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const MaterialApp(home: ScannerScreen()));
+      await tester.pumpWidget(createTestableWidget(const ScannerScreen()));
       await tester.pumpAndSettle();
 
       expect(find.text('NutriCode'), findsOneWidget);
@@ -81,7 +82,7 @@ void main() {
     testWidgets('manual barcode field accepts input', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const MaterialApp(home: ScannerScreen()));
+      await tester.pumpWidget(createTestableWidget(const ScannerScreen()));
       await tester.pumpAndSettle();
 
       final fieldFinder = find.byType(TextField);
@@ -97,7 +98,7 @@ void main() {
     testWidgets('empty manual barcode submission does not navigate away', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const MaterialApp(home: ScannerScreen()));
+      await tester.pumpWidget(createTestableWidget(const ScannerScreen()));
       await tester.pumpAndSettle();
 
       await tester.tap(find.byIcon(Icons.search));
@@ -110,7 +111,7 @@ void main() {
     testWidgets('flashlight toggle button exists on scanner screen', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const MaterialApp(home: ScannerScreen()));
+      await tester.pumpWidget(createTestableWidget(const ScannerScreen()));
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.flash_off), findsOneWidget);

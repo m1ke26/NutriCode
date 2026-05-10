@@ -14,12 +14,9 @@ class _AllergenScreenState extends State<AllergenScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: AllergenProvider.instance,
-      child: _AllergenScreenContent(
-        query: _query,
-        onQueryChanged: (q) => setState(() => _query = q),
-      ),
+    return _AllergenScreenContent(
+      query: _query,
+      onQueryChanged: (q) => setState(() => _query = q),
     );
   }
 }

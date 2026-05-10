@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:NutriCode/screens/home_screen.dart';
+import '../mock_helper.dart';
 
 void main() {
   group('HomeScreen / Bottom Navigation Bar Tests', () {
     testWidgets('renders bottom navigation bar with three tabs',
         (WidgetTester tester) async {
-      await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
+      await tester.pumpWidget(createTestableWidget(const HomeScreen()));
       await tester.pumpAndSettle();
 
       // Check all three nav items exist
@@ -17,7 +18,7 @@ void main() {
 
     testWidgets('starts on the Scan tab by default',
         (WidgetTester tester) async {
-      await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
+      await tester.pumpWidget(createTestableWidget(const HomeScreen()));
       await tester.pumpAndSettle();
 
       // The scanner tab AppBar title should be visible
@@ -30,7 +31,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(400, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
+      await tester.pumpWidget(createTestableWidget(const HomeScreen()));
       await tester.pumpAndSettle();
 
       // Tap profile tab
@@ -38,18 +39,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // Profile screen content should appear
-      expect(find.text('Profile'), findsWidgets);
-      expect(
-        find.text(
-          'Coming soon! Your profile settings,\ndietary preferences, and scan history\nwill appear here.',
-        ),
-        findsOneWidget,
-      );
+      expect(find.text('My Profile'), findsWidgets);
     });
 
     testWidgets('tapping Search tab navigates to search screen',
         (WidgetTester tester) async {
-      await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
+      await tester.pumpWidget(createTestableWidget(const HomeScreen()));
       await tester.pumpAndSettle();
 
       // Tap search tab
@@ -63,7 +58,7 @@ void main() {
 
     testWidgets('tapping Scan tab from another tab returns to scanner',
         (WidgetTester tester) async {
-      await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
+      await tester.pumpWidget(createTestableWidget(const HomeScreen()));
       await tester.pumpAndSettle();
 
       // Go to Search first
@@ -81,7 +76,7 @@ void main() {
 
     testWidgets('scan button in nav bar has QR code scanner icon',
         (WidgetTester tester) async {
-      await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
+      await tester.pumpWidget(createTestableWidget(const HomeScreen()));
       await tester.pumpAndSettle();
 
       // The scan button uses a qr_code_scanner icon
@@ -90,7 +85,7 @@ void main() {
 
     testWidgets('nav bar labels are Profile, Scan, and Search',
         (WidgetTester tester) async {
-      await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
+      await tester.pumpWidget(createTestableWidget(const HomeScreen()));
       await tester.pumpAndSettle();
 
       // Check all labels exist
@@ -105,7 +100,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(400, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
+      await tester.pumpWidget(createTestableWidget(const HomeScreen()));
       await tester.pumpAndSettle();
 
       // Go to search, type something
@@ -131,5 +126,27 @@ void main() {
           tester.widget<TextField>(find.byKey(const Key('search_text_field')));
       expect(textField.controller!.text, 'Test');
     });
+   group('Logout Dialog Tests', () {
+    testWidgets('tapping logout icon shows confirmation dialog',
+        (WidgetTester tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(createTestableWidget(const HomeScreen()));
+      await tester.pumpAndSettle();
+
+      // Go to profile
+      await tester.tap(find.byKey(const Key('nav_profile')));
+      await tester.pumpAndSettle();
+
+      // Tap logout icon in the header
+      await tester.tap(find.byIcon(Icons.logout_rounded));
+      await tester.pumpAndSettle();
+
+      // Check if dialog is shown
+      expect(find.text('Logout'), findsWidgets);
+      expect(find.text('Are you sure you want to log out of your NutriCode account?'), findsOneWidget);
+    });
   });
+ });
 }

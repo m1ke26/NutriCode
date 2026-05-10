@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
@@ -15,7 +16,26 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(const NutriCodeApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<AuthService>(create: (_) => AuthService()),
+        ChangeNotifierProxyProvider<AuthService, AllergenProvider>(
+          create: (context) => AllergenProvider(
+            Provider.of<AuthService>(context, listen: false),
+          ),
+          update: (context, auth, previous) => previous ?? AllergenProvider(auth),
+        ),
+        ChangeNotifierProxyProvider<AuthService, VeganProvider>(
+          create: (context) => VeganProvider(
+            Provider.of<AuthService>(context, listen: false),
+          ),
+          update: (context, auth, previous) => previous ?? VeganProvider(auth),
+        ),
+      ],
+      child: const NutriCodeApp(),
+    ),
+  );
 }
 
 class NutriCodeApp extends StatelessWidget {
@@ -53,7 +73,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Future<void> _initializeUserData() async {
     if (_initialized) return;
     
-    final authService = AuthService();
+    final authService = Provider.of<AuthService>(context, listen: false);
     final userData = await authService.getUserData();
     
     if (userData == null) {
@@ -68,8 +88,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
       return;
     }
 
-    await AllergenProvider.instance.loadFromFirestore();
-    await VeganProvider.instance.loadFromFirestore();
+    await Provider.of<AllergenProvider>(context, listen: false).loadFromFirestore();
+    await Provider.of<VeganProvider>(context, listen: false).loadFromFirestore();
     
     if (mounted) {
       setState(() => _initialized = true);
@@ -78,8 +98,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context, listen: false);
     return StreamBuilder<User?>(
-      stream: AuthService().userStateChanges,
+      stream: authService.userStateChanges,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(

@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
 class VeganProvider extends ChangeNotifier {
-  static final VeganProvider instance = VeganProvider._();
-  VeganProvider._();
+  final AuthService _authService;
 
-  final AuthService _authService = AuthService();
+  VeganProvider(this._authService);
 
   bool _isEnabled = false;
   bool get isEnabled => _isEnabled;
