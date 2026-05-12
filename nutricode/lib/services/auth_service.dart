@@ -1,24 +1,21 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
 
 class AuthService {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
   final GoogleSignIn _googleSignIn;
 
   AuthService({
     FirebaseAuth? auth,
     FirebaseFirestore? firestore,
-    FirebaseStorage? storage,
     GoogleSignIn? googleSignIn,
   })  : _auth = auth ?? FirebaseAuth.instance,
         _firestore = firestore ?? FirebaseFirestore.instance,
-        _storage = storage ?? FirebaseStorage.instance,
         _googleSignIn = googleSignIn ?? GoogleSignIn();
 
   // Auth state changes stream
@@ -55,13 +52,13 @@ class AuthService {
     }
   }
 
-  // Upload profile picture to Firebase Storage
+  // Convert profile picture to base64 data URI (stored in Firestore)
   Future<String> uploadProfilePicture(File file) async {
     if (currentUser == null) throw 'User not logged in';
-    
-    final ref = _storage.ref().child('profile_pics').child('${currentUser!.uid}.jpg');
-    await ref.putFile(file);
-    return await ref.getDownloadURL();
+
+    final bytes = await file.readAsBytes();
+    final base64String = base64Encode(bytes);
+    return 'data:image/jpeg;base64,$base64String';
   }
 
   // Sign in with Google

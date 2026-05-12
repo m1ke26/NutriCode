@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -155,7 +156,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 70,
+    );
     
     if (image != null) {
       setState(() => _isLoading = true);
@@ -256,7 +262,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               radius: 55,
                               backgroundColor: const Color(0xFFF0F4F4),
                               backgroundImage: _userModel?.photoUrl != null
-                                  ? NetworkImage(_userModel!.photoUrl!)
+                                  ? (_userModel!.photoUrl!.startsWith('data:')
+                                      ? MemoryImage(
+                                          base64Decode(
+                                            _userModel!.photoUrl!.split(',').last,
+                                          ),
+                                        )
+                                      : NetworkImage(_userModel!.photoUrl!)
+                                    ) as ImageProvider
                                   : null,
                               child: _userModel?.photoUrl == null
                                   ? const Icon(
