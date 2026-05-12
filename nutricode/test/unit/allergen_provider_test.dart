@@ -1,64 +1,62 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/providers/allergen_provider.dart';
+import 'package:NutriCode/providers/allergen_provider.dart';
+import 'package:NutriCode/services/auth_service.dart';
+import '../mock_helper.dart';
 
 void main() {
   group('AllergenProvider', () {
+    late MockAuthService mockAuth;
+    late AllergenProvider allergenProvider;
+
     setUp(() {
-      // Clear all allergens before each test
-      for (final allergen in AllergenProvider.commonAllergens.toList()) {
-        if (AllergenProvider.instance.isSelected(allergen)) {
-          AllergenProvider.instance.toggle(allergen);
-        }
-      }
+      mockAuth = MockAuthService();
+      allergenProvider = AllergenProvider(mockAuth);
     });
 
     test('initializes with no selected allergens', () {
-      expect(AllergenProvider.instance.selectedAllergens.isEmpty, true);
+      expect(allergenProvider.selectedAllergens.isEmpty, true);
     });
 
     test('toggles allergen selection on', () {
-      AllergenProvider.instance.toggle('gluten');
-      expect(AllergenProvider.instance.isSelected('gluten'), true);
+      allergenProvider.toggle('gluten');
+      expect(allergenProvider.isSelected('gluten'), true);
     });
 
     test('toggles allergen selection off', () {
-      AllergenProvider.instance.toggle('gluten');
-      AllergenProvider.instance.toggle('gluten');
-      expect(AllergenProvider.instance.isSelected('gluten'), false);
+      allergenProvider.toggle('gluten');
+      allergenProvider.toggle('gluten');
+      expect(allergenProvider.isSelected('gluten'), false);
     });
 
     test('maintains multiple selected allergens', () {
-      AllergenProvider.instance.toggle('gluten');
-      AllergenProvider.instance.toggle('milk');
-      AllergenProvider.instance.toggle('nuts');
+      allergenProvider.toggle('gluten');
+      allergenProvider.toggle('milk');
+      allergenProvider.toggle('nuts');
 
-      expect(AllergenProvider.instance.selectedAllergens.length, 3);
-      expect(AllergenProvider.instance.isSelected('gluten'), true);
-      expect(AllergenProvider.instance.isSelected('milk'), true);
-      expect(AllergenProvider.instance.isSelected('nuts'), true);
+      expect(allergenProvider.selectedAllergens.length, 3);
+      expect(allergenProvider.isSelected('gluten'), true);
+      expect(allergenProvider.isSelected('milk'), true);
+      expect(allergenProvider.isSelected('nuts'), true);
     });
 
     test('returns unmodifiable set of selected allergens', () {
-      AllergenProvider.instance.toggle('gluten');
-      final selected = AllergenProvider.instance.selectedAllergens;
+      allergenProvider.toggle('gluten');
+      final selected = allergenProvider.selectedAllergens;
 
-      expect(() => selected.add('milk'), throwsUnsupportedError);
+      expect(() => (selected as dynamic).add('milk'), throwsUnsupportedError);
     });
 
     test('notifies listeners on toggle', () {
       var notificationCount = 0;
-      AllergenProvider.instance.addListener(() {
+      allergenProvider.addListener(() {
         notificationCount++;
       });
 
-      AllergenProvider.instance.toggle('gluten');
+      allergenProvider.toggle('gluten');
       expect(notificationCount, 1);
 
-      AllergenProvider.instance.toggle('milk');
+      allergenProvider.toggle('milk');
       expect(notificationCount, 2);
-
-      // Cleanup
-      AllergenProvider.instance.removeListener(() {});
     });
 
     test('returns correct display name for allergen', () {
@@ -85,21 +83,14 @@ void main() {
       expect(AllergenProvider.commonAllergens.length, 14);
     });
 
-    test('is singleton instance', () {
-      final instance1 = AllergenProvider.instance;
-      final instance2 = AllergenProvider.instance;
-
-      expect(identical(instance1, instance2), true);
-    });
-
     test('persists state across multiple toggles', () {
-      AllergenProvider.instance.toggle('gluten');
-      AllergenProvider.instance.toggle('milk');
-      expect(AllergenProvider.instance.selectedAllergens.length, 2);
+      allergenProvider.toggle('gluten');
+      allergenProvider.toggle('milk');
+      expect(allergenProvider.selectedAllergens.length, 2);
 
-      AllergenProvider.instance.toggle('gluten');
-      expect(AllergenProvider.instance.selectedAllergens.length, 1);
-      expect(AllergenProvider.instance.isSelected('milk'), true);
+      allergenProvider.toggle('gluten');
+      expect(allergenProvider.selectedAllergens.length, 1);
+      expect(allergenProvider.isSelected('milk'), true);
     });
   });
 }

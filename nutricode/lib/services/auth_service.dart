@@ -42,7 +42,21 @@ class AuthService {
     if (currentUser == null) return;
     
     Map<String, dynamic> updates = {};
-    if (name != null) updates['name'] = name;
+    if (name != null) {
+      final trimmedName = name.trim();
+      if (trimmedName.isEmpty) throw 'Name cannot be empty.';
+
+      // Check if this name is taken by another user
+      final nameCheck = await _firestore
+          .collection('users')
+          .where('name', isEqualTo: trimmedName)
+          .get();
+
+      if (nameCheck.docs.isNotEmpty && nameCheck.docs.first.id != currentUser!.uid) {
+        throw "The name '$trimmedName' is already being used by another member. Please choose a unique one!";
+      }
+      updates['name'] = trimmedName;
+    }
     if (photoUrl != null) updates['photoUrl'] = photoUrl;
     if (isVegan != null) updates['isVegan'] = isVegan;
     if (allergens != null) updates['allergens'] = allergens;
@@ -97,6 +111,7 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     } catch (e) {
+      if (e is String) throw e;
       print("Google Sign In Error: $e");
       throw 'An unexpected error occurred during Google sign-in.';
     }
@@ -109,6 +124,19 @@ class AuthService {
     required String name,
   }) async {
     try {
+      final trimmedName = name.trim();
+      if (trimmedName.isEmpty) throw 'Name cannot be empty.';
+
+      // Check if username is already taken
+      final nameCheck = await _firestore
+          .collection('users')
+          .where('name', isEqualTo: trimmedName)
+          .get();
+
+      if (nameCheck.docs.isNotEmpty) {
+        throw "Oops! The username '$trimmedName' is already taken. How about trying a different one?";
+      }
+
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -130,6 +158,7 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     } catch (e) {
+      if (e is String) throw e;
       throw 'An unexpected error occurred during registration.';
     }
   }
@@ -206,7 +235,7 @@ class AuthService {
       case 'invalid-credential':
         return 'Incorrect email/username or password.';
       case 'email-already-in-use':
-        return 'This email is already registered. Try logging in instead.';
+        return "This email is already part of the NutriCode family! Try logging in or resetting your password if you've forgotten it.";
       case 'invalid-email':
         return 'Please enter a valid email address.';
       case 'weak-password':

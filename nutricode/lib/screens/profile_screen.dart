@@ -142,16 +142,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  void _showSnackbar(String message, {bool isError = true}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isError ? Icons.error_outline : Icons.check_circle_outline,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: isError ? const Color(0xFFD90429) : const Color(0xFF1B998B),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: Colors.white.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+        elevation: 0,
+        margin: const EdgeInsets.all(20),
+      ),
+    );
+  }
+
   Future<void> _updateName() async {
     if (_nameController.text.trim().isEmpty) return;
     
     setState(() => _isLoading = true);
-    await _authService.updateProfile(name: _nameController.text.trim());
-    await _loadUserData();
-    setState(() {
-      _isEditingName = false;
-      _isLoading = false;
-    });
+    try {
+      await _authService.updateProfile(name: _nameController.text.trim());
+      await _loadUserData();
+      setState(() => _isEditingName = false);
+    } catch (e) {
+      _showSnackbar(e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _pickImage() async {
@@ -170,11 +203,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         await _authService.updateProfile(photoUrl: url);
         await _loadUserData();
       } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error uploading image: $e')),
-          );
-        }
+        _showSnackbar('Failed to update profile picture: ${e.toString()}');
       } finally {
         if (mounted) setState(() => _isLoading = false);
       }
