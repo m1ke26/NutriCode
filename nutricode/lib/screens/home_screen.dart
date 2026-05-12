@@ -13,10 +13,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 1; // Start on Scan (center tab)
 
-  final List<Widget> _screens = const [
-    SearchScreen(),
-    ScannerScreen(),
-    ProfileScreen(),
+  late final List<Widget> _screens = [
+    const SearchScreen(),
+    const ScannerScreen(),
+    ProfileScreen(onGoToScan: () => setState(() => _currentIndex = 1)),
   ];
 
   @override

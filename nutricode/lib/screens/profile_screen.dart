@@ -7,9 +7,14 @@ import '../providers/vegan_provider.dart';
 import '../services/auth_service.dart';
 import '../models/user_model.dart';
 import 'allergen_screen.dart';
+import 'history_screen.dart';
+import 'app_settings_screen.dart';
+import 'help_support_screen.dart';
+import '../providers/history_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final VoidCallback? onGoToScan;
+  const ProfileScreen({super.key, this.onGoToScan});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -374,22 +379,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildFeaturePreview(
-                    Icons.history_rounded,
-                    'Scan History',
-                    'Coming soon!',
+                  _buildHistoryCard(context),
+                  const SizedBox(height: 12),
+                  _buildNavCard(
+                    context,
+                    icon: Icons.settings_suggest_rounded,
+                    title: 'App Settings',
+                    subtitle: 'Clear history, app version',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AppSettingsScreen()),
+                    ),
                   ),
                   const SizedBox(height: 12),
-                  _buildFeaturePreview(
-                    Icons.settings_suggest_rounded,
-                    'App Settings',
-                    'Coming soon!',
-                  ),
-                  const SizedBox(height: 12),
-                  _buildFeaturePreview(
-                    Icons.help_outline_rounded,
-                    'Help & Support',
-                    'Coming soon!',
+                  _buildNavCard(
+                    context,
+                    icon: Icons.help_outline_rounded,
+                    title: 'Help & Support',
+                    subtitle: 'How to use, about, privacy',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HelpSupportScreen()),
+                    ),
                   ),
                   
                   const SizedBox(height: 40),
@@ -574,9 +585,146 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Switch.adaptive(
             value: isEnabled,
             onChanged: (_) => _veganProvider.toggle(),
-            activeColor: Colors.green,
+            activeThumbColor: Colors.white,
+            activeTrackColor: Colors.green,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryCard(BuildContext context) {
+    final count = context.watch<HistoryProvider>().entries.length;
+    final subtitle = count == 0
+        ? 'No scans yet — start scanning!'
+        : '$count product${count == 1 ? '' : 's'} scanned';
+
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => HistoryScreen(onGoToScan: widget.onGoToScan)),
+      ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1B998B).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.history_rounded,
+                color: Color(0xFF1B998B),
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Scan History',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2C3E50),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: count > 0
+                          ? const Color(0xFF1B998B)
+                          : Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              color: Color(0xFF1B998B),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1B998B).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: const Color(0xFF1B998B), size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2C3E50),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+          ],
+        ),
       ),
     );
   }
