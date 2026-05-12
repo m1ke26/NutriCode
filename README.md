@@ -447,6 +447,30 @@ Some screenshots and demos:
 
 ### Sprint 2
 
+**Retrospective**
+
+- **Did well:**
+  - Feature development: We successfully implemented several core features, including product search by name, allergen filtering, ingredient detail visualization, user authentication, and user profile management with database integration.
+  - Testing and validation: A significant amount of testing was carried out during this sprint, helping identify issues early and improving the stability and reliability of the application.   
+  - System integration: We made good progress integrating frontend features with backend and database components, especially in authentication and user profile management.
+
+- **Do differently:**
+  - Earlier integration testing: Although many tests were completed, some integration issues were only discovered later in development. Next sprint, we aim to test integrated features earlier.
+  - Documentation: Some implementation details and testing results were not always documented consistently. Improving technical documentation could make collaboration easier.
+
+- **Puzzles:**
+  - Authentication edge cases: Further testing may be needed to validate all authentication and profile update scenarios, especially error handling and database synchronization.
+
+**Board at the End of Iteration 2**
+
+<p align="center">
+   <img src="docs/iteration2_board.png" width="800">
+</p>
+
+**Happiness Meter**
+
+
+
 ### Sprint 3
 
 ### Sprint 4
