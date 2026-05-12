@@ -39,5 +39,10 @@ jobs:
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v2
         with:
-          # This is the default output path for a Flutter APK
-          files: build/app/outputs/flutter-apk/app-release.apk
+          # Adicione o nome da sua pasta aqui antes de "build"
+          # Ou use o wildcard ** para ele procurar em tudo
+          files: |
+            **/build/app/outputs/flutter-apk/app-release.apk
+          overwrite_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
