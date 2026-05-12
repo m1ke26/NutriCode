@@ -458,7 +458,7 @@ Some screenshots and demos:
   - Earlier integration testing: Although many tests were completed, some integration issues were only discovered later in development. Next sprint, we aim to test integrated features earlier.
   - Documentation: Some implementation details and testing results were not always documented consistently. Improving technical documentation could make collaboration easier.
 
--**Puzzles:**
+- **Puzzles:**
   - Authentication edge cases: Further testing may be needed to validate all authentication and profile update scenarios, especially error handling and database synchronization.
 
 **Board at the End of Iteration 2**
