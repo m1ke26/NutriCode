@@ -469,6 +469,10 @@ Some screenshots and demos:
 
 **Happiness Meter**
 
+<p align="center">
+  <img src="docs/happiness_sprint_2.png" width="800">
+</p>
+
 
 
 ### Sprint 3
