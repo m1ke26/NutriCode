@@ -12,7 +12,20 @@
           "package_name": "com.nutricode.nutricode"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "709830412742-afp81sa9lprvocpupolhdojkkrusvt5b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nutricode.nutricode",
+            "certificate_hash": "c29de98f166265614e7db69ca1a7391f5e7b2b45"
+          }
+        },
+        {
+          "client_id": "709830412742-04f0cjgplp0vio3qm2954tv3bqek451i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyA_zt1GpwFW5zwlJ0N414VMTCetSkDl2PM"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "709830412742-04f0cjgplp0vio3qm2954tv3bqek451i.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "709830412742-bskh40is93rl2ngkhieg9ml77a746lja.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.nutricode.nutricodePrototype"
+              }
+            }
+          ]
         }
       }
     }

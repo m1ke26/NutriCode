@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/services.dart';
 import '../models/user_model.dart';
 
 class AuthService {
@@ -96,20 +97,34 @@ class AuthService {
 
       // Update/Create user profile in Firestore
       if (userCredential.user != null) {
-        await _firestore.collection('users').doc(userCredential.user!.uid).set({
-          'name': userCredential.user!.displayName ?? 'Google User',
-          'email': userCredential.user!.email,
-          'lastSeen': FieldValue.serverTimestamp(),
-          'uid': userCredential.user!.uid,
-          // Initialize these if they don't exist
-          'isVegan': false,
-          'allergens': [],
-        }, SetOptions(merge: true));
+        final userDoc = await _firestore.collection('users').doc(userCredential.user!.uid).get();
+        
+        if (!userDoc.exists) {
+          // New user: create the document with Google profile info
+          await _firestore.collection('users').doc(userCredential.user!.uid).set({
+            'name': userCredential.user!.displayName ?? 'Google User',
+            'email': userCredential.user!.email,
+            'lastSeen': FieldValue.serverTimestamp(),
+            'uid': userCredential.user!.uid,
+            'isVegan': false,
+            'allergens': [],
+          });
+        } else {
+          // Existing user: only update the last seen timestamp
+          await _firestore.collection('users').doc(userCredential.user!.uid).update({
+            'lastSeen': FieldValue.serverTimestamp(),
+          });
+        }
       }
 
       return userCredential;
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
+    } on PlatformException catch (e) {
+      if (e.code == '10' || e.code == 'DEVELOPER_ERROR') {
+        throw 'Google Sign-In Error: Developer Error (10). This usually means your SHA-1 fingerprint is missing in Firebase or the project is misconfigured.';
+      }
+      throw 'Google Sign-In failed (${e.code}): ${e.message}';
     } catch (e) {
       if (e is String) throw e;
       print("Google Sign In Error: $e");
