@@ -30,9 +30,11 @@ jobs:
 
       - name: Install Dependencies
         run: flutter pub get
+        working-directory: ./nutricode
 
       - name: Build Release APK
         run: flutter build apk --release
+        working-directory: ./nutricode
 
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v2
