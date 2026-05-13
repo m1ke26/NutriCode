@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart' as http_testing;
-import '../../lib/providers/product_provider.dart';
-import '../../lib/services/open_food_facts_service.dart';
+import 'package:NutriCode/providers/product_provider.dart';
+import 'package:NutriCode/services/open_food_facts_service.dart';
 
 void main() {
   group('ProductProvider', () {

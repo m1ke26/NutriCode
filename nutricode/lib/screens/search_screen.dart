@@ -485,7 +485,7 @@ class SearchScreenState extends State<SearchScreen> {
                         ? Image.network(
                             product.imageUrl!,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(
+                            errorBuilder: (_, _, _) => const Icon(
                               Icons.inventory_2_outlined,
                               color: Colors.grey,
                               size: 28,

@@ -91,7 +91,7 @@ class _AllergenScreenContent extends StatelessWidget {
           : ListView.separated(
               padding: const EdgeInsets.symmetric(vertical: 8),
               itemCount: filtered.length,
-              separatorBuilder: (_, __) =>
+              separatorBuilder: (_, _) =>
                   Divider(height: 1, color: Colors.grey.shade100),
               itemBuilder: (context, index) {
                 final allergen = filtered[index];

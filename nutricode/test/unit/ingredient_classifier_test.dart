@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/utils/ingredient_classifier.dart';
-import '../../lib/services/open_food_facts_service.dart';
+import 'package:NutriCode/utils/ingredient_classifier.dart';
+import 'package:NutriCode/services/open_food_facts_service.dart';
 
 void main() {
   group('classifyIngredient', () {

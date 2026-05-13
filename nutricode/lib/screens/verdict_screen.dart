@@ -345,7 +345,7 @@ class _VerdictScreenContent extends StatelessWidget {
                   product.imageUrl!,
                   height: 100,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
                 ),
               ),
               const SizedBox(height: 16),

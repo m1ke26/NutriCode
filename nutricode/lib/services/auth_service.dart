@@ -126,7 +126,7 @@ class AuthService {
       }
       throw 'Google Sign-In failed (${e.code}): ${e.message}';
     } catch (e) {
-      if (e is String) throw e;
+      if (e is String) rethrow;
       print("Google Sign In Error: $e");
       throw 'An unexpected error occurred during Google sign-in.';
     }
@@ -173,7 +173,7 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     } catch (e) {
-      if (e is String) throw e;
+      if (e is String) rethrow;
       throw 'An unexpected error occurred during registration.';
     }
   }
@@ -207,7 +207,7 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     } catch (e) {
-      if (e is String) throw e;
+      if (e is String) rethrow;
       throw 'Incorrect email/username or password.';
     }
   }
@@ -235,7 +235,7 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     } catch (e) {
-      if (e is String) throw e;
+      if (e is String) rethrow;
       throw 'An unexpected error occurred. Please try again.';
     }
   }

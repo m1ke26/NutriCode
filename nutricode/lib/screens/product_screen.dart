@@ -147,7 +147,7 @@ class _ProductScreenContent extends StatelessWidget {
                   product.imageUrl!,
                   height: 200,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 100, color: Colors.grey),
+                  errorBuilder: (_, _, _) => const Icon(Icons.broken_image, size: 100, color: Colors.grey),
                 ),
               ),
             ),

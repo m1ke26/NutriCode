@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:NutriCode/providers/allergen_provider.dart';
-import 'package:NutriCode/services/auth_service.dart';
 import '../mock_helper.dart';
 
 void main() {

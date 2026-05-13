@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/widgets/ingredient_info_sheet.dart';
-import '../../lib/utils/ingredient_classifier.dart';
+import 'package:NutriCode/widgets/ingredient_info_sheet.dart';
+import 'package:NutriCode/utils/ingredient_classifier.dart';
 
 void main() {
   group('Ingredient Info Sheet Widget Tests', () {
