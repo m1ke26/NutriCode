@@ -63,6 +63,7 @@ Features
 - **Search by Name** - find products manually when barcode is unavailable
 - **Allergen Filter** - personalize alerts based on your specific allergies or intolerances
 - **Favorites and Blacklists** - save safe products and flag ones to avoid
+- **Vegan Mode** - automatically flag products considered non vegan 
 
 Assumptions
 
