@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/services.dart';
 import '../models/user_model.dart';
+import '../models/scan_history_entry.dart';
 
 class AuthService {
   final FirebaseAuth _auth;
@@ -65,6 +66,106 @@ class AuthService {
     if (updates.isNotEmpty) {
       await _firestore.collection('users').doc(currentUser!.uid).update(updates);
     }
+  }
+
+  // Add a product scan to the user's history
+  Future<void> addScanToHistory({
+    required String barcode,
+    String? name,
+    String? imageUrl,
+    String? brand,
+  }) async {
+    if (currentUser == null) return;
+    await _firestore
+        .collection('users')
+        .doc(currentUser!.uid)
+        .collection('scan_history')
+        .add({
+          'barcode': barcode,
+          'name': name,
+          'imageUrl': imageUrl,
+          'brand': brand,
+          'scannedAt': FieldValue.serverTimestamp(),
+        });
+  }
+
+  // Delete all scan history entries for the current user
+  Future<void> clearScanHistory() async {
+    if (currentUser == null) return;
+    final snapshot = await _firestore
+        .collection('users')
+        .doc(currentUser!.uid)
+        .collection('scan_history')
+        .get();
+    final batch = _firestore.batch();
+    for (final doc in snapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
+  }
+
+  // Retrieve scan history ordered by most recent first
+  Future<List<ScanHistoryEntry>> getScanHistory() async {
+    if (currentUser == null) return [];
+    final snapshot = await _firestore
+        .collection('users')
+        .doc(currentUser!.uid)
+        .collection('scan_history')
+        .orderBy('scannedAt', descending: true)
+        .get();
+    return snapshot.docs
+        .map((doc) => ScanHistoryEntry.fromFirestore(doc))
+        .toList();
+  }
+
+  // Add a product scan to the user's history
+  Future<void> addScanToHistory({
+    required String barcode,
+    String? name,
+    String? imageUrl,
+    String? brand,
+  }) async {
+    if (currentUser == null) return;
+    await _firestore
+        .collection('users')
+        .doc(currentUser!.uid)
+        .collection('scan_history')
+        .add({
+          'barcode': barcode,
+          'name': name,
+          'imageUrl': imageUrl,
+          'brand': brand,
+          'scannedAt': FieldValue.serverTimestamp(),
+        });
+  }
+
+  // Delete all scan history entries for the current user
+  Future<void> clearScanHistory() async {
+    if (currentUser == null) return;
+    final snapshot = await _firestore
+        .collection('users')
+        .doc(currentUser!.uid)
+        .collection('scan_history')
+        .get();
+    final batch = _firestore.batch();
+    for (final doc in snapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
+  }
+
+  // Retrieve scan history ordered by most recent first
+  Future<List<ScanHistoryEntry>> getScanHistory() async {
+    if (currentUser == null) return [];
+    final snapshot = await _firestore
+        .collection('users')
+        .doc(currentUser!.uid)
+        .collection('scan_history')
+        .orderBy('scannedAt', descending: true)
+        .get();
+    return snapshot.docs
+        .map((doc) => ScanHistoryEntry.fromFirestore(doc))
+        .toList();
   }
 
   // Convert profile picture to base64 data URI (stored in Firestore)

@@ -9,33 +9,57 @@ import '../utils/vegan_classifier.dart';
 import 'product_screen.dart';
 
 import '../services/open_food_facts_service.dart';
+import '../providers/history_provider.dart';
 
 class VerdictScreen extends StatelessWidget {
   final String barcode;
   final OpenFoodFactsService? service;
-  const VerdictScreen({super.key, required this.barcode, this.service});
+  final bool saveToHistory;
+  const VerdictScreen({super.key, required this.barcode, this.service, this.saveToHistory = true});
 
   @override
   Widget build(BuildContext context) {
-    return _VerdictScreenContent(barcode: barcode, service: service);
+    return _VerdictScreenContent(barcode: barcode, service: service, saveToHistory: saveToHistory);
   }
 }
 
-class _VerdictScreenContent extends StatelessWidget {
+class _VerdictScreenContent extends StatefulWidget {
   final String barcode;
   final OpenFoodFactsService? service;
-  const _VerdictScreenContent({required this.barcode, this.service});
+  final bool saveToHistory;
+  const _VerdictScreenContent({required this.barcode, this.service, this.saveToHistory = true});
+
+  @override
+  State<_VerdictScreenContent> createState() => _VerdictScreenContentState();
+}
+
+class _VerdictScreenContentState extends State<_VerdictScreenContent> {
+  bool _historySaved = false;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => ProductProvider(service: service)..fetchProduct(barcode),
+      create: (_) => ProductProvider(service: widget.service)..fetchProduct(widget.barcode),
       child: Consumer<ProductProvider>(
-        builder: (context, provider, _) => Scaffold(
-          backgroundColor: Colors.white,
-          appBar: AppBar(title: const Text('NutriCode'), centerTitle: true),
-          body: _buildBody(context, provider),
-        ),
+        builder: (context, provider, _) {
+          // Save to history once when product is successfully loaded (skip if opened from history)
+          if (widget.saveToHistory && provider.state == ProductState.success && !_historySaved) {
+            _historySaved = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                context.read<HistoryProvider>().addScan(
+                  provider.product!,
+                  widget.barcode,
+                );
+              }
+            });
+          }
+          return Scaffold(
+            backgroundColor: Colors.white,
+            appBar: AppBar(title: const Text('NutriCode'), centerTitle: true),
+            body: _buildBody(context, provider),
+          );
+        },
       ),
     );
   }
@@ -97,7 +121,7 @@ class _VerdictScreenContent extends StatelessWidget {
 
   // ── Not Found / Failed Scan ───────────────────────────────────
   Widget _buildNotFoundState(BuildContext context) {
-    final isTimeout = barcode == 'FAILED_TO_SCAN';
+    final isTimeout = widget.barcode == 'FAILED_TO_SCAN';
 
     return Center(
       child: Padding(
@@ -134,7 +158,7 @@ class _VerdictScreenContent extends StatelessWidget {
             const SizedBox(height: 8),
             if (!isTimeout)
               Text(
-                'Barcode: $barcode',
+                'Barcode: ${widget.barcode}',
                 style: const TextStyle(fontSize: 14, color: Colors.black54),
               ),
             const SizedBox(height: 32),
@@ -148,7 +172,7 @@ class _VerdictScreenContent extends StatelessWidget {
                 color: const Color(0xFF8B4513),
                 onPressed: () async {
                   final url = Uri.parse(
-                    'https://www.google.com/search?q=$barcode+product+barcode',
+                    'https://www.google.com/search?q=${widget.barcode}+product+barcode',
                   );
                   if (await canLaunchUrl(url)) {
                     await launchUrl(url, mode: LaunchMode.externalApplication);
@@ -445,7 +469,7 @@ class _VerdictScreenContent extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => ProductScreen(barcode: barcode),
+                      builder: (_) => ProductScreen(barcode: widget.barcode),
                     ),
                   );
                 },
