@@ -5,6 +5,7 @@ import 'package:NutriCode/screens/profile_screen.dart';
 import 'package:NutriCode/screens/allergen_screen.dart';
 import 'package:NutriCode/providers/allergen_provider.dart';
 import 'package:NutriCode/providers/vegan_provider.dart';
+import 'package:NutriCode/providers/history_provider.dart';
 import 'package:NutriCode/services/auth_service.dart';
 import '../mock_helper.dart';
 
@@ -18,16 +19,19 @@ void main() {
       MockAuthService? authService,
       AllergenProvider? allergenProv,
       VeganProvider? veganProv,
+      HistoryProvider? historyProv,
     }) {
       mockAuth = authService ?? MockAuthService();
       allergenProvider = allergenProv ?? AllergenProvider(mockAuth);
       veganProvider = veganProv ?? VeganProvider(mockAuth);
+      final historyProvider = historyProv ?? HistoryProvider(mockAuth);
 
       return MultiProvider(
         providers: [
           Provider<AuthService>.value(value: mockAuth),
           ChangeNotifierProvider<AllergenProvider>.value(value: allergenProvider),
           ChangeNotifierProvider<VeganProvider>.value(value: veganProvider),
+          ChangeNotifierProvider<HistoryProvider>.value(value: historyProvider),
         ],
         child: const MaterialApp(home: ProfileScreen()),
       );
@@ -40,12 +44,6 @@ void main() {
       expect(find.text('My Profile'), findsOneWidget);
     });
 
-    testWidgets('displays coming soon labels on feature cards', (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestableProfileScreen());
-      await tester.pumpAndSettle();
-
-      expect(find.text('Coming soon!'), findsNWidgets(3));
-    });
 
     testWidgets('displays avatar placeholder icon', (WidgetTester tester) async {
       await tester.pumpWidget(buildTestableProfileScreen());
