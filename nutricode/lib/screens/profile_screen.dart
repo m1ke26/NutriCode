@@ -13,6 +13,8 @@ import 'favorites_screen.dart';
 import 'app_settings_screen.dart';
 import 'help_support_screen.dart';
 import '../providers/history_provider.dart';
+import '../providers/pattern_provider.dart';
+import '../utils/app_patterns.dart';
 import '../providers/favorites_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -234,38 +236,73 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                Container(
-                  height: 200,
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF1B998B), Color(0xFF15796E)],
-                    ),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(40),
-                      bottomRight: Radius.circular(40),
-                    ),
-                  ),
+                Consumer<PatternProvider>(
+                  builder: (context, patternProvider, _) {
+                    final idx = patternProvider.patternIndex;
+                    final painter = appPatterns[idx].createPainter();
+                    return ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(40),
+                        bottomRight: Radius.circular(40),
+                      ),
+                      child: Container(
+                        height: 200,
+                        width: double.infinity,
+                        decoration: const BoxDecoration(gradient: kAppGradient),
+                        child: painter != null
+                            ? CustomPaint(painter: painter)
+                            : null,
+                      ),
+                    );
+                  },
                 ),
                 SafeArea(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Stack(
+                      alignment: Alignment.center,
                       children: [
-                        const Text(
-                          'My Profile',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Consumer<PatternProvider>(
+                          builder: (context, patternProvider, _) {
+                            final hasPattern = patternProvider.patternIndex != 0;
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              padding: hasPattern
+                                  ? const EdgeInsets.symmetric(horizontal: 14, vertical: 6)
+                                  : EdgeInsets.zero,
+                              decoration: BoxDecoration(
+                                color: hasPattern
+                                    ? Colors.black.withValues(alpha: 0.22)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Text(
+                                'My Profile',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                        IconButton(
-                          onPressed: () => _showLogoutConfirmation(context),
-                          icon: const Icon(Icons.logout_rounded, color: Colors.white),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                onPressed: () => _showBannerPicker(context),
+                                icon: const Icon(Icons.palette_outlined, color: Colors.white),
+                                tooltip: 'Change theme',
+                              ),
+                              IconButton(
+                                onPressed: () => _showLogoutConfirmation(context),
+                                icon: const Icon(Icons.logout_rounded, color: Colors.white),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -279,22 +316,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Center(
                     child: GestureDetector(
                       onTap: _pickImage,
-                      child: Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 15,
-                              offset: Offset(0, 8),
+                      behavior: HitTestBehavior.opaque,
+                      child: Stack(
+                        children: [
+                          // White ring with shadow
+                          Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 15,
+                                  offset: Offset(0, 8),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Stack(
-                          children: [
-                            CircleAvatar(
+                            child: CircleAvatar(
                               radius: 55,
                               backgroundColor: const Color(0xFFF0F4F4),
                               backgroundImage: _userModel?.photoUrl != null
@@ -315,24 +354,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     )
                                   : null,
                             ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF1B998B),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.camera_alt_rounded,
-                                  size: 18,
-                                  color: Colors.white,
-                                ),
+                          ),
+                          // Camera badge — visual indicator
+                          Positioned(
+                            bottom: 2,
+                            right: 2,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF1B998B),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt_rounded,
+                                size: 18,
+                                color: Colors.white,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -363,15 +403,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () => setState(() => _isEditingName = true),
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1B998B).withOpacity(0.1),
-                              shape: BoxShape.circle,
+                        Material(
+                          color: const Color(0xFF1B998B).withValues(alpha: 0.10),
+                          shape: const CircleBorder(),
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            onTap: () => setState(() => _isEditingName = true),
+                            splashColor: const Color(0xFF1B998B).withValues(alpha: 0.25),
+                            highlightColor: const Color(0xFF1B998B).withValues(alpha: 0.12),
+                            child: const Padding(
+                              padding: EdgeInsets.all(6),
+                              child: Icon(Icons.edit_rounded, size: 16, color: Color(0xFF1B998B)),
                             ),
-                            child: const Icon(Icons.edit_rounded, size: 16, color: Color(0xFF1B998B)),
                           ),
                         ),
                       ],
@@ -459,6 +502,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future<void> _showBannerPicker(BuildContext context) async {
+    final patternProvider = Provider.of<PatternProvider>(context, listen: false);
+    final current = patternProvider.patternIndex;
+    final selected = await showModalBottomSheet<int>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _BannerPickerSheet(current: current),
+    );
+    if (selected != null && selected != current) {
+      await patternProvider.setPattern(selected);
+    }
+  }
+
   Widget _buildNameEditor() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -511,26 +567,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ? 'No restrictions'
         : '$count restriction${count == 1 ? '' : 's'} active';
 
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const AllergenScreen()),
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AllergenScreen()),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
@@ -570,6 +631,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const Icon(Icons.chevron_right_rounded, color: Colors.grey),
           ],
+        ),
+      ),
         ),
       ),
     );
@@ -645,26 +708,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ? 'No scans yet — start scanning!'
         : '$count product${count == 1 ? '' : 's'} scanned';
 
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => HistoryScreen(onGoToScan: widget.onGoToScan)),
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => HistoryScreen(onGoToScan: widget.onGoToScan)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
@@ -709,6 +777,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: Color(0xFF1B998B),
             ),
           ],
+        ),
+          ),
         ),
       ),
     );
@@ -797,23 +867,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String subtitle,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
@@ -847,9 +922,121 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const Icon(Icons.chevron_right_rounded, color: Colors.grey),
           ],
         ),
+          ),
+        ),
       ),
     );
   }
 
 }
 
+// ── Banner theme picker sheet ─────────────────────────────────────────
+class _BannerPickerSheet extends StatefulWidget {
+  final int current;
+  const _BannerPickerSheet({required this.current});
+
+  @override
+  State<_BannerPickerSheet> createState() => _BannerPickerSheetState();
+}
+
+class _BannerPickerSheetState extends State<_BannerPickerSheet> {
+  late int _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = widget.current;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40, height: 4,
+            decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Choose Banner Theme',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF2C3E50)),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(appPatterns.length, (i) {
+              final pattern = appPatterns[i];
+              final isSelected = _selected == i;
+              return Column(
+                children: [
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: () => setState(() => _selected = i),
+                      customBorder: const CircleBorder(),
+                      splashColor: Colors.white.withValues(alpha: 0.35),
+                      child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: 54,
+                      height: 54,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: kAppGradient,
+                        border: Border.all(
+                          color: isSelected ? const Color(0xFF2C3E50) : Colors.transparent,
+                          width: 3,
+                        ),
+                        boxShadow: isSelected
+                            ? [const BoxShadow(color: Color(0x661B998B), blurRadius: 10, spreadRadius: 1)]
+                            : [],
+                      ),
+                      child: Center(
+                        child: isSelected
+                            ? const Icon(Icons.check_rounded, color: Colors.white, size: 22)
+                            : Icon(pattern.icon, color: Colors.white, size: 22),
+                      ),
+                    ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    pattern.name,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
+                      color: isSelected ? const Color(0xFF2C3E50) : Colors.grey[500],
+                    ),
+                  ),
+                ],
+              );
+            }),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(context, _selected),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1B998B),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 0,
+              ),
+              child: const Text('Apply', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

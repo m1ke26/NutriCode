@@ -42,6 +42,7 @@ class AuthService {
     String? photoUrl,
     bool? isVegan,
     List<String>? allergens,
+    int? bannerPattern,
   }) async {
     if (currentUser == null) return;
     
@@ -64,6 +65,7 @@ class AuthService {
     if (photoUrl != null) updates['photoUrl'] = photoUrl;
     if (isVegan != null) updates['isVegan'] = isVegan;
     if (allergens != null) updates['allergens'] = allergens;
+    if (bannerPattern != null) updates['bannerPattern'] = bannerPattern;
 
     if (updates.isNotEmpty) {
       await _firestore.collection('users').doc(currentUser!.uid).update(updates);
@@ -229,6 +231,7 @@ class AuthService {
             'uid': userCredential.user!.uid,
             'isVegan': false,
             'allergens': [],
+            'isNewUser': true,
           });
         } else {
           // Existing user: only update the last seen timestamp
@@ -287,6 +290,7 @@ class AuthService {
           'uid': userCredential.user!.uid,
           'isVegan': false,
           'allergens': [],
+          'isNewUser': true,
         });
 
         // Send email verification
@@ -338,6 +342,13 @@ class AuthService {
     }
   }
 
+  // Mark onboarding as complete (called right before showing the dialog)
+  Future<void> markOnboardingComplete() async {
+    if (currentUser == null) return;
+    await _firestore
+        .collection('users')
+        .doc(currentUser!.uid)
+        .update({'isNewUser': false});
   // Resend verification email
   Future<void> resendVerificationEmail() async {
     final user = _auth.currentUser;

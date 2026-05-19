@@ -7,6 +7,8 @@ class UserModel {
   final String? photoUrl;
   final bool isVegan;
   final List<String> allergens;
+  final int bannerPattern;
+  final bool isNewUser;
 
   UserModel({
     required this.uid,
@@ -15,6 +17,8 @@ class UserModel {
     this.photoUrl,
     this.isVegan = false,
     this.allergens = const [],
+    this.bannerPattern = 0,
+    this.isNewUser = false,
   });
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
@@ -26,6 +30,8 @@ class UserModel {
       photoUrl: data['photoUrl'],
       isVegan: data['isVegan'] ?? false,
       allergens: List<String>.from(data['allergens'] ?? []),
+      bannerPattern: (data['bannerPattern'] as int?) ?? 0,
+      isNewUser: data['isNewUser'] as bool? ?? false,
     );
   }
 
@@ -36,6 +42,8 @@ class UserModel {
       'photoUrl': photoUrl,
       'isVegan': isVegan,
       'allergens': allergens,
+      'bannerPattern': bannerPattern,
+      'isNewUser': isNewUser,
     };
   }
 
@@ -44,6 +52,8 @@ class UserModel {
     String? photoUrl,
     bool? isVegan,
     List<String>? allergens,
+    int? bannerPattern,
+    bool? isNewUser,
   }) {
     return UserModel(
       uid: uid,
@@ -52,6 +62,8 @@ class UserModel {
       photoUrl: photoUrl ?? this.photoUrl,
       isVegan: isVegan ?? this.isVegan,
       allergens: allergens ?? this.allergens,
+      bannerPattern: bannerPattern ?? this.bannerPattern,
+      isNewUser: isNewUser ?? this.isNewUser,
     );
   }
 }

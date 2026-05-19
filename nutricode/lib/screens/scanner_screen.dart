@@ -218,7 +218,29 @@ class _ScannerScreenState extends State<ScannerScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text('NutriCode'), centerTitle: true),
+      appBar: AppBar(
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.eco_rounded, color: Color(0xFF1B998B), size: 22),
+            SizedBox(width: 7),
+            Text(
+              'NutriCode',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1B998B),
+                letterSpacing: 2.2,
+              ),
+            ),
+          ],
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF2C3E50),
+        elevation: 0,
+        surfaceTintColor: Colors.white,
+      ),
       body: Column(
         children: [
           // Scanner area takes up most of the screen
