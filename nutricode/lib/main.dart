@@ -7,6 +7,7 @@ import 'services/auth_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/email_verification_screen.dart';
 import 'providers/allergen_provider.dart';
 import 'providers/vegan_provider.dart';
 import 'providers/history_provider.dart';
@@ -117,6 +118,14 @@ class _AuthWrapperState extends State<AuthWrapper> {
         }
         
         if (snapshot.hasData) {
+          final user = snapshot.data!;
+
+          // If the email is not verified (skip for Google sign-in users),
+          // show the verification screen instead of the home screen.
+          if (!user.emailVerified) {
+            return const EmailVerificationScreen();
+          }
+
           if (!_initialized) {
             _initializeUserData();
             return const Scaffold(

@@ -20,8 +20,9 @@ class AuthService {
         _firestore = firestore ?? FirebaseFirestore.instance,
         _googleSignIn = googleSignIn ?? GoogleSignIn();
 
-  // Auth state changes stream
-  Stream<User?> get userStateChanges => _auth.authStateChanges();
+  // Auth state changes stream — using idTokenChanges so it also fires
+  // when the ID token is refreshed (e.g. after email verification).
+  Stream<User?> get userStateChanges => _auth.idTokenChanges();
 
   // Current user
   User? get currentUser => _auth.currentUser;
@@ -218,6 +219,11 @@ class AuthService {
           'isVegan': false,
           'allergens': [],
         });
+
+        // Send email verification
+        if (!userCredential.user!.emailVerified) {
+          await userCredential.user!.sendEmailVerification();
+        }
       }
 
       return userCredential;
@@ -261,6 +267,28 @@ class AuthService {
       if (e is String) rethrow;
       throw 'Incorrect email/username or password.';
     }
+  }
+
+  // Resend verification email
+  Future<void> resendVerificationEmail() async {
+    final user = _auth.currentUser;
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+    }
+  }
+
+  // Check if current user's email is verified (forces a reload from Firebase).
+  // When verified, forces a token refresh to trigger idTokenChanges() stream.
+  Future<bool> isEmailVerified() async {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+    await user.reload();
+    final verified = _auth.currentUser?.emailVerified ?? false;
+    if (verified) {
+      // Force token refresh — this triggers idTokenChanges() in AuthWrapper
+      await _auth.currentUser?.getIdToken(true);
+    }
+    return verified;
   }
 
   // Sign out

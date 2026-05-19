@@ -490,8 +490,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         name: name,
       );
       if (mounted) {
-        _showSnackbar('Welcome to NutriCode!', isError: false);
-        // Important: Pop the RegisterScreen so the AuthWrapper's HomeScreen is visible
+        // Pop RegisterScreen — AuthWrapper will show the EmailVerificationScreen
         Navigator.of(context).pop();
       }
     } catch (e) {

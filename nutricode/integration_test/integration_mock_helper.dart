@@ -36,6 +36,10 @@ class MockAuthService implements AuthService {
   @override
   Future<void> sendPasswordResetEmail(String email) async {}
   @override
+  Future<void> resendVerificationEmail() async {}
+  @override
+  Future<bool> isEmailVerified() async => true;
+  @override
   Future<void> addScanToHistory({
     required String barcode,
     String? name,
