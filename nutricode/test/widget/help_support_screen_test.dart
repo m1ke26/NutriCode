@@ -32,7 +32,10 @@ void main() {
 
       // Tap How to Use NutriCode tile
       await tester.tap(find.text('How to Use NutriCode'));
-      await tester.pumpAndSettle();
+      // Use pump with a duration instead of pumpAndSettle because the sheet
+      // contains a repeating AnimationController that never settles.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Modal bottom sheet should be visible
       expect(find.text('How to Use NutriCode'), findsWidgets); // finds in sheet too
@@ -42,7 +45,8 @@ void main() {
 
       // Drag/scroll ListView to reveal step 3
       await tester.drag(find.byType(ListView).last, const Offset(0, -200));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.text('Set your allergens'), findsOneWidget);
     });

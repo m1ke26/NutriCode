@@ -254,7 +254,7 @@ class HowToUseSheet extends StatelessWidget {
                 controller: controller,
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
                 itemCount: _steps.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (_, i) {
                   final step = _steps[i];
                   return Container(
@@ -409,7 +409,7 @@ class _ScanAnimationWidgetState extends State<_ScanAnimationWidget>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _ctrl,
-      builder: (_, __) {
+      builder: (_, _) {
         return FadeTransition(
           opacity: _sceneOpacity,
           child: ClipRRect(

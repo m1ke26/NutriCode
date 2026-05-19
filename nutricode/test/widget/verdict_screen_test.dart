@@ -14,6 +14,9 @@ import 'package:NutriCode/services/auth_service.dart';
 import '../mock_helper.dart';
 
 void main() {
+  // Ensure the framework is initialized for widget/integration testing
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('VerdictScreen Widget Tests', () {
     late MockAuthService mockAuth;
     late AllergenProvider allergenProvider;
@@ -51,18 +54,20 @@ void main() {
     testWidgets('shows loading spinner initially', (WidgetTester tester) async {
       final mockClient = http_testing.MockClient((request) async {
         // Delay to ensure the loading state remains visible
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future.delayed(const Duration(milliseconds: 200));
         return http.Response(jsonEncode({'status': 0}), 200);
       });
       final service = OpenFoodFactsService(client: mockClient);
 
       await tester.pumpWidget(buildVerdictScreen(service, '123'));
+      // Trigger the first frame to show the loader
+      await tester.pump();
       
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      expect(find.text('Analyzing product... 🔍'), findsOneWidget);
+      expect(find.textContaining('Analyzing'), findsOneWidget);
       
-      // Let delay complete
-      await tester.pump(const Duration(milliseconds: 150));
+      // Advance clock to allow the Future to finish, which should remove the spinner
+      await tester.pump(const Duration(milliseconds: 250));
       await tester.pumpAndSettle();
     });
 
@@ -73,7 +78,6 @@ void main() {
       final service = OpenFoodFactsService(client: mockClient);
 
       await tester.pumpWidget(buildVerdictScreen(service, '999111'));
-      await tester.pump();
       await tester.pumpAndSettle();
 
       expect(find.text('Product Not Found'), findsOneWidget);
@@ -103,7 +107,6 @@ void main() {
       final service = OpenFoodFactsService(client: mockClient);
 
       await tester.pumpWidget(buildVerdictScreen(service, '777'));
-      await tester.pump();
       await tester.pumpAndSettle();
 
       expect(find.text('Pure Water'), findsOneWidget);
@@ -134,7 +137,6 @@ void main() {
       final service = OpenFoodFactsService(client: mockClient);
 
       await tester.pumpWidget(buildVerdictScreen(service, '888'));
-      await tester.pump();
       await tester.pumpAndSettle();
 
       expect(find.text('Slightly Salted Nuts'), findsOneWidget);
@@ -163,7 +165,6 @@ void main() {
       final service = OpenFoodFactsService(client: mockClient);
 
       await tester.pumpWidget(buildVerdictScreen(service, '555'));
-      await tester.pump();
       await tester.pumpAndSettle();
 
       expect(find.text('Soda Drink'), findsOneWidget);

@@ -8,7 +8,7 @@ import '../mock_helper.dart';
 
 class LocalMockHistoryProvider extends HistoryProvider {
   bool clearHistoryCalled = false;
-  LocalMockHistoryProvider(AuthService authService) : super(authService);
+  LocalMockHistoryProvider(super.authService);
 
   @override
   bool get isEmpty => false;

@@ -5,6 +5,7 @@ import 'package:NutriCode/providers/allergen_provider.dart';
 import 'package:NutriCode/providers/vegan_provider.dart';
 import 'package:NutriCode/providers/history_provider.dart';
 import 'package:NutriCode/providers/favorites_provider.dart';
+import 'package:NutriCode/providers/pattern_provider.dart';
 import 'package:NutriCode/models/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:NutriCode/models/scan_history_entry.dart';
@@ -78,6 +79,7 @@ Widget createTestableWidget(Widget child, {MockAuthService? authService, History
       ChangeNotifierProvider(create: (_) => VeganProvider(mockAuth)),
       ChangeNotifierProvider(create: (_) => historyProvider ?? HistoryProvider(mockAuth)),
       ChangeNotifierProvider(create: (_) => favoritesProvider ?? FavoritesProvider(mockAuth)),
+      ChangeNotifierProvider(create: (_) => PatternProvider(mockAuth)),
     ],
     child: MaterialApp(home: child),
   );

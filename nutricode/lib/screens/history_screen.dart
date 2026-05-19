@@ -100,7 +100,7 @@ class HistoryScreen extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: entries.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) => _buildCard(context, entries[index]),
     );
   }
@@ -133,7 +133,7 @@ class HistoryScreen extends StatelessWidget {
                     ? Image.network(
                         entry.imageUrl!,
                         fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => const Icon(
+                        errorBuilder: (_, _, _) => const Icon(
                           Icons.inventory_2_outlined,
                           color: Colors.grey,
                           size: 28,

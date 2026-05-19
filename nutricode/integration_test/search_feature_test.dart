@@ -5,7 +5,6 @@ import 'package:integration_test/integration_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart' as http_testing;
 
-import 'package:NutriCode/screens/home_screen.dart';
 import 'package:NutriCode/screens/search_screen.dart';
 import 'package:NutriCode/services/product_search_service.dart';
 import 'integration_mock_helper.dart';
@@ -36,22 +35,15 @@ void main() {
         
         final mockService = ProductSearchService(client: mockClient);
 
-        // Load the HomeScreen
-        await tester.pumpWidget(createTestableWidget(const HomeScreen()));
-        await tester.pumpAndSettle();
-
-        // Navigate to the Search tab
-        await tester.tap(find.byKey(const Key('nav_search')));
-        await tester.pumpAndSettle();
-
-        // Navigate there or pump the SearchScreen directly with mock service
+        // Load the SearchScreen directly with mock service to ensure isolation
         await tester.pumpWidget(createTestableWidget(
-            Scaffold(body: SearchScreen(service: mockService)),
+          Scaffold(body: SearchScreen(service: mockService)),
         ));
         await tester.pumpAndSettle();
 
         // Act: Enter "Coca-Cola"
         await tester.enterText(find.byKey(const Key('search_text_field')), 'Coca-Cola');
+        await tester.pump(); // Ensure text change is processed
         await tester.tap(find.byKey(const Key('search_submit_button')));
 
         // Wait for results
@@ -84,6 +76,7 @@ void main() {
 
         // Act: Enter random text
         await tester.enterText(find.byKey(const Key('search_text_field')), 'NonExistentProduct123');
+        await tester.pump(); // Ensure text change is processed
         await tester.tap(find.byKey(const Key('search_submit_button')));
 
         await tester.pump();

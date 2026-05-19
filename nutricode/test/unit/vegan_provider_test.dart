@@ -17,6 +17,7 @@ class LocalMockAuthService extends MockAuthService {
     String? photoUrl,
     bool? isVegan,
     List<String>? allergens,
+    int? bannerPattern,
   }) async {
     updateProfileCalled = true;
     lastIsVeganUpdate = isVegan;
