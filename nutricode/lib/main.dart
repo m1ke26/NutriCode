@@ -11,6 +11,7 @@ import 'screens/email_verification_screen.dart';
 import 'providers/allergen_provider.dart';
 import 'providers/vegan_provider.dart';
 import 'providers/history_provider.dart';
+import 'providers/favorites_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +40,12 @@ void main() async {
             Provider.of<AuthService>(context, listen: false),
           ),
           update: (context, auth, previous) => previous ?? HistoryProvider(auth),
+        ),
+        ChangeNotifierProxyProvider<AuthService, FavoritesProvider>(
+          create: (context) => FavoritesProvider(
+            Provider.of<AuthService>(context, listen: false),
+          ),
+          update: (context, auth, previous) => previous ?? FavoritesProvider(auth),
         ),
       ],
       child: const NutriCodeApp(),
@@ -99,6 +106,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     await Provider.of<AllergenProvider>(context, listen: false).loadFromFirestore();
     await Provider.of<VeganProvider>(context, listen: false).loadFromFirestore();
     await Provider.of<HistoryProvider>(context, listen: false).loadFromFirestore();
+    await Provider.of<FavoritesProvider>(context, listen: false).loadFromFirestore();
     
     if (mounted) {
       setState(() => _initialized = true);

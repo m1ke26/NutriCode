@@ -9,6 +9,7 @@ import 'package:NutriCode/services/open_food_facts_service.dart';
 import 'package:NutriCode/providers/allergen_provider.dart';
 import 'package:NutriCode/providers/vegan_provider.dart';
 import 'package:NutriCode/providers/history_provider.dart';
+import 'package:NutriCode/providers/favorites_provider.dart';
 import 'package:NutriCode/services/auth_service.dart';
 import '../mock_helper.dart';
 
@@ -18,12 +19,14 @@ void main() {
     late AllergenProvider allergenProvider;
     late VeganProvider veganProvider;
     late HistoryProvider historyProvider;
+    late FavoritesProvider favoritesProvider;
 
     setUp(() {
       mockAuth = MockAuthService();
       allergenProvider = AllergenProvider(mockAuth);
       veganProvider = VeganProvider(mockAuth);
       historyProvider = HistoryProvider(mockAuth);
+      favoritesProvider = FavoritesProvider(mockAuth);
     });
 
     Widget buildVerdictScreen(OpenFoodFactsService service, String barcode) {
@@ -33,6 +36,7 @@ void main() {
           ChangeNotifierProvider<AllergenProvider>.value(value: allergenProvider),
           ChangeNotifierProvider<VeganProvider>.value(value: veganProvider),
           ChangeNotifierProvider<HistoryProvider>.value(value: historyProvider),
+          ChangeNotifierProvider<FavoritesProvider>.value(value: favoritesProvider),
         ],
         child: MaterialApp(
           home: VerdictScreen(

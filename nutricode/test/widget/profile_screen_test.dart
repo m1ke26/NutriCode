@@ -6,6 +6,7 @@ import 'package:NutriCode/screens/allergen_screen.dart';
 import 'package:NutriCode/providers/allergen_provider.dart';
 import 'package:NutriCode/providers/vegan_provider.dart';
 import 'package:NutriCode/providers/history_provider.dart';
+import 'package:NutriCode/providers/favorites_provider.dart';
 import 'package:NutriCode/services/auth_service.dart';
 import '../mock_helper.dart';
 
@@ -20,11 +21,13 @@ void main() {
       AllergenProvider? allergenProv,
       VeganProvider? veganProv,
       HistoryProvider? historyProv,
+      FavoritesProvider? favoritesProv,
     }) {
       mockAuth = authService ?? MockAuthService();
       allergenProvider = allergenProv ?? AllergenProvider(mockAuth);
       veganProvider = veganProv ?? VeganProvider(mockAuth);
       final historyProvider = historyProv ?? HistoryProvider(mockAuth);
+      final favoritesProvider = favoritesProv ?? FavoritesProvider(mockAuth);
 
       return MultiProvider(
         providers: [
@@ -32,6 +35,7 @@ void main() {
           ChangeNotifierProvider<AllergenProvider>.value(value: allergenProvider),
           ChangeNotifierProvider<VeganProvider>.value(value: veganProvider),
           ChangeNotifierProvider<HistoryProvider>.value(value: historyProvider),
+          ChangeNotifierProvider<FavoritesProvider>.value(value: favoritesProvider),
         ],
         child: const MaterialApp(home: ProfileScreen()),
       );
