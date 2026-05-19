@@ -26,7 +26,9 @@ class MockAuthService implements AuthService {
   @override
   Future<void> signOut() async {}
   @override
-  Future<void> updateProfile({String? name, String? photoUrl, bool? isVegan, List<String>? allergens}) async {}
+  Future<void> updateProfile({String? name, String? photoUrl, bool? isVegan, List<String>? allergens, int? bannerPattern}) async {}
+  @override
+  Future<void> markOnboardingComplete() async {}
   @override
   Future<String> uploadProfilePicture(dynamic file) async => '';
   @override

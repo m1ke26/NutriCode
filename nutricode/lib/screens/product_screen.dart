@@ -485,47 +485,47 @@ class _IngredientsListWidgetState extends State<_IngredientsListWidget> {
         child: Theme(
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
-          iconColor: const Color(0xFF1B998B),
-          collapsedIconColor: const Color(0xFF1B998B),
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1B998B).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+            iconColor: const Color(0xFF1B998B),
+            collapsedIconColor: const Color(0xFF1B998B),
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1B998B).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.receipt_long, color: Color(0xFF1B998B)),
             ),
-            child: const Icon(Icons.receipt_long, color: Color(0xFF1B998B)),
-          ),
-          title: const Text('Ingredients', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50))),
-          initiallyExpanded: true,
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
+            title: const Text('Ingredients', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50))),
+            initiallyExpanded: true,
+            tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
                   _legendDot(Colors.green, 'Good'),
                   _legendDot(Colors.orange, 'Moderate'),
                   _legendDot(Colors.red, 'Avoid'),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: sortedIngredients.map((ingredient) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _IngredientItemWidget(
-                    ingredient: ingredient,
-                    allergens: widget.allergens,
-                    effectiveLevel: _getEffectiveLevel(ingredient),
-                    hasAllergen: _hasAllergenRecursive(ingredient),
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
+                ],
+              ),
+              const SizedBox(height: 20),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: sortedIngredients.map((ingredient) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _IngredientItemWidget(
+                      ingredient: ingredient,
+                      allergens: widget.allergens,
+                      effectiveLevel: _getEffectiveLevel(ingredient),
+                      hasAllergen: _hasAllergenRecursive(ingredient),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }

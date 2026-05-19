@@ -47,6 +47,7 @@ void main() async {
             Provider.of<AuthService>(context, listen: false),
           ),
           update: (context, auth, previous) => previous ?? PatternProvider(auth),
+        ),
         ChangeNotifierProxyProvider<AuthService, FavoritesProvider>(
           create: (context) => FavoritesProvider(
             Provider.of<AuthService>(context, listen: false),

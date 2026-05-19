@@ -349,6 +349,8 @@ class AuthService {
         .collection('users')
         .doc(currentUser!.uid)
         .update({'isNewUser': false});
+  }
+
   // Resend verification email
   Future<void> resendVerificationEmail() async {
     final user = _auth.currentUser;
