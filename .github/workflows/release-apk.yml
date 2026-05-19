@@ -1,31 +1,4 @@
 name: Build and Upload Release APK
-
-on:
-  release:
-    types: [published]
-  push: # Optional: Runs tests on pushes to main to catch errors early
-    branches: [main]
-
-jobs:
-  # --- NEW JOB: Runs Unit, Widget, and Integration Tests ---
-  test:
-    name: Run Unit & Integration Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-name: Build and Upload Release APK
 on:
   release:
     types: [published]
@@ -55,7 +28,6 @@ jobs:
         run: flutter pub get
         working-directory: ./nutricode
 
-      # ✅ ADDED
       - name: Inject google-services.json
         run: echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > ./nutricode/android/app/google-services.json
 
@@ -105,7 +77,6 @@ jobs:
         run: flutter pub get
         working-directory: ./nutricode
 
-     
       - name: Inject google-services.json
         run: echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > ./nutricode/android/app/google-services.json
 
