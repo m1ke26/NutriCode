@@ -36,22 +36,34 @@ android {
 
     
     signingConfigs {
-        release {
-            // Looks for environment variables from GitHub Actions, or defaults to blank locally
-            storeFile file(System.getenv("KEYSTORE_PATH") ?: "noop")
-            storePassword System.getenv("KEYSTORE_PASSWORD") ?: ""
-            keyAlias System.getenv("KEY_ALIAS") ?: ""
-            keyPassword System.getenv("KEY_PASSWORD") ?: ""
+        create("release") {
+            val keystorePathEnv = System.getenv("KEYSTORE_PATH")
+            
+            if (!keystorePathEnv.isNullOrEmpty()) {
+                // CI/CD Environment (GitHub Actions)
+                storeFile = file(keystorePathEnv)
+                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+                keyAlias = System.getenv("KEY_ALIAS") ?: ""
+                keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+            } else {
+                // Local Machine Environment fallback
+                // Uses Gradle's built-in file helper to grab your local home directory safely
+                storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
         }
     }
 
-   buildTypes {
+    buildTypes {
         getByName("release") {
-            // Replace the old debug signing config with your new release setup
+            // Assign the release signing configuration we created above
             signingConfig = signingConfigs.getByName("release")
             
-            minifyEnabled = false
-            shrinkResources = false
+            // In some versions of Gradle Kotlin DSL, these use isMinifyEnabled and isShrinkResources
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
