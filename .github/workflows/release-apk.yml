@@ -1,4 +1,4 @@
-name: Build and Upload Release APK
+name: Build, Test, and Upload Release APK
 
 on:
   release:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: Build APK and Upload
+    name: Test, Build APK, and Upload
     runs-on: ubuntu-latest
     
     # Required permission to upload assets to a GitHub Release
@@ -17,21 +17,47 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # 1. Enable KVM for Android Hardware Acceleration (Crucial for Linux Emulators)
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '17' # Java 17 is standard for modern Android builds
+          java-version: '17'
 
+      # 2. Setup Flutter and caching
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true
 
       - name: Install Dependencies
         run: flutter pub get
         working-directory: ./nutricode
 
+      # 3. Normal Unit and Widget Tests
+      - name: Run Unit & Widget Tests
+        run: flutter test
+        working-directory: ./nutricode
+
+      # 4. Spin up Emulator and Run Integration Tests
+      - name: Run Integration Tests on Android Emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 31
+          target: google_apis
+          arch: x86_64
+          profile: Pixel_6
+          working-directory: ./nutricode
+          script: flutter test integration_test
+
+      # 5. Build and Upload Release Artifacts
       - name: Build Release APK
         run: flutter build apk --release
         working-directory: ./nutricode
@@ -39,8 +65,6 @@ jobs:
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v2
         with:
-          # Adicione o nome da sua pasta aqui antes de "build"
-          # Ou use o wildcard ** para ele procurar em tudo
           files: |
             **/build/app/outputs/flutter-apk/app-release.apk
           overwrite_files: true
