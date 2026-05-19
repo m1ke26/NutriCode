@@ -7,10 +7,12 @@ import 'services/auth_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/email_verification_screen.dart';
 import 'providers/allergen_provider.dart';
 import 'providers/vegan_provider.dart';
 import 'providers/history_provider.dart';
 import 'providers/pattern_provider.dart';
+import 'providers/favorites_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,6 +47,11 @@ void main() async {
             Provider.of<AuthService>(context, listen: false),
           ),
           update: (context, auth, previous) => previous ?? PatternProvider(auth),
+        ChangeNotifierProxyProvider<AuthService, FavoritesProvider>(
+          create: (context) => FavoritesProvider(
+            Provider.of<AuthService>(context, listen: false),
+          ),
+          update: (context, auth, previous) => previous ?? FavoritesProvider(auth),
         ),
       ],
       child: const NutriCodeApp(),
@@ -106,6 +113,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     await Provider.of<VeganProvider>(context, listen: false).loadFromFirestore();
     await Provider.of<HistoryProvider>(context, listen: false).loadFromFirestore();
     await Provider.of<PatternProvider>(context, listen: false).loadFromFirestore();
+    await Provider.of<FavoritesProvider>(context, listen: false).loadFromFirestore();
     
     if (mounted) {
       setState(() => _initialized = true);
@@ -125,6 +133,14 @@ class _AuthWrapperState extends State<AuthWrapper> {
         }
         
         if (snapshot.hasData) {
+          final user = snapshot.data!;
+
+          // If the email is not verified (skip for Google sign-in users),
+          // show the verification screen instead of the home screen.
+          if (!user.emailVerified) {
+            return const EmailVerificationScreen();
+          }
+
           if (!_initialized) {
             _initializeUserData();
             return const Scaffold(

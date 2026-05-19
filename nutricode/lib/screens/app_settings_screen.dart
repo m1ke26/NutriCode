@@ -133,7 +133,12 @@ class AppSettingsScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: child,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: child,
+      ),
     );
   }
 

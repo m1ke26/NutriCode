@@ -10,6 +10,7 @@ import 'product_screen.dart';
 
 import '../services/open_food_facts_service.dart';
 import '../providers/history_provider.dart';
+import '../providers/favorites_provider.dart';
 
 class VerdictScreen extends StatelessWidget {
   final String barcode;
@@ -476,6 +477,57 @@ class _VerdictScreenContentState extends State<_VerdictScreenContent> {
               ),
               const SizedBox(height: 12),
             ],
+
+            // Add / Remove Favorites button
+            Consumer<FavoritesProvider>(
+              builder: (context, favProvider, _) {
+                final isFav = favProvider.isFavorite(widget.barcode);
+                return SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    key: const Key('toggle_favorite_button'),
+                    onPressed: () async {
+                      await favProvider.toggleFavorite(product, widget.barcode);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).clearSnackBars();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isFav
+                                  ? 'Removed from favorites'
+                                  : 'Added to favorites ⭐',
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            backgroundColor: const Color(0xFF2C3E50),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                    icon: Icon(
+                      isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                    ),
+                    label: Text(isFav ? 'Remove from Favorites' : 'Add to Favorites'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isFav ? Colors.grey.shade200 : Colors.amber.shade600,
+                      foregroundColor: isFav ? Colors.black87 : Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
 
             // Scan again
             OutlinedButton.icon(

@@ -34,11 +34,36 @@ android {
         versionName = flutter.versionName
     }
 
+    
+    signingConfigs {
+        create("release") {
+            val keystorePathEnv = System.getenv("KEYSTORE_PATH")
+            
+            if (!keystorePathEnv.isNullOrEmpty()) {
+                // CI/CD Environment (GitHub Actions)
+                storeFile = file(keystorePathEnv)
+                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+                keyAlias = System.getenv("KEY_ALIAS") ?: ""
+                keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+            } else {
+                // Local Machine Environment fallback
+                // Uses Gradle's built-in file helper to grab your local home directory safely
+                storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
+    }
+
     buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+        getByName("release") {
+            // Assign the release signing configuration we created above
+            signingConfig = signingConfigs.getByName("release")
+            
+            // In some versions of Gradle Kotlin DSL, these use isMinifyEnabled and isShrinkResources
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }

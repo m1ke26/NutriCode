@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/services.dart';
 import '../models/user_model.dart';
 import '../models/scan_history_entry.dart';
+import '../models/favorite_product.dart';
 
 class AuthService {
   final FirebaseAuth _auth;
@@ -20,8 +21,9 @@ class AuthService {
         _firestore = firestore ?? FirebaseFirestore.instance,
         _googleSignIn = googleSignIn ?? GoogleSignIn();
 
-  // Auth state changes stream
-  Stream<User?> get userStateChanges => _auth.authStateChanges();
+  // Auth state changes stream — using idTokenChanges so it also fires
+  // when the ID token is refreshed (e.g. after email verification).
+  Stream<User?> get userStateChanges => _auth.idTokenChanges();
 
   // Current user
   User? get currentUser => _auth.currentUser;
@@ -118,6 +120,74 @@ class AuthService {
     return snapshot.docs
         .map((doc) => ScanHistoryEntry.fromFirestore(doc))
         .toList();
+  }
+
+  // ── Favorites ─────────────────────────────────────────────────────
+
+  // Add a product to the user's favorites
+  Future<void> addFavorite({
+    required String barcode,
+    String? name,
+    String? imageUrl,
+    String? brand,
+  }) async {
+    if (currentUser == null) return;
+    await _firestore
+        .collection('users')
+        .doc(currentUser!.uid)
+        .collection('favorites')
+        .add({
+          'barcode': barcode,
+          'name': name,
+          'imageUrl': imageUrl,
+          'brand': brand,
+          'addedAt': FieldValue.serverTimestamp(),
+        });
+  }
+
+  // Remove a product from favorites by barcode
+  Future<void> removeFavorite(String barcode) async {
+    if (currentUser == null) return;
+    final snapshot = await _firestore
+        .collection('users')
+        .doc(currentUser!.uid)
+        .collection('favorites')
+        .where('barcode', isEqualTo: barcode)
+        .get();
+    final batch = _firestore.batch();
+    for (final doc in snapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
+  }
+
+  // Retrieve favorites ordered by most recently added first
+  Future<List<FavoriteProduct>> getFavorites() async {
+    if (currentUser == null) return [];
+    final snapshot = await _firestore
+        .collection('users')
+        .doc(currentUser!.uid)
+        .collection('favorites')
+        .orderBy('addedAt', descending: true)
+        .get();
+    return snapshot.docs
+        .map((doc) => FavoriteProduct.fromFirestore(doc))
+        .toList();
+  }
+
+  // Delete all favorites for the current user
+  Future<void> clearFavorites() async {
+    if (currentUser == null) return;
+    final snapshot = await _firestore
+        .collection('users')
+        .doc(currentUser!.uid)
+        .collection('favorites')
+        .get();
+    final batch = _firestore.batch();
+    for (final doc in snapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
   }
 
   // Convert profile picture to base64 data URI (stored in Firestore)
@@ -222,6 +292,11 @@ class AuthService {
           'allergens': [],
           'isNewUser': true,
         });
+
+        // Send email verification
+        if (!userCredential.user!.emailVerified) {
+          await userCredential.user!.sendEmailVerification();
+        }
       }
 
       return userCredential;
@@ -274,6 +349,26 @@ class AuthService {
         .collection('users')
         .doc(currentUser!.uid)
         .update({'isNewUser': false});
+  // Resend verification email
+  Future<void> resendVerificationEmail() async {
+    final user = _auth.currentUser;
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+    }
+  }
+
+  // Check if current user's email is verified (forces a reload from Firebase).
+  // When verified, forces a token refresh to trigger idTokenChanges() stream.
+  Future<bool> isEmailVerified() async {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+    await user.reload();
+    final verified = _auth.currentUser?.emailVerified ?? false;
+    if (verified) {
+      // Force token refresh — this triggers idTokenChanges() in AuthWrapper
+      await _auth.currentUser?.getIdToken(true);
+    }
+    return verified;
   }
 
   // Sign out
