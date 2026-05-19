@@ -480,9 +480,11 @@ class _IngredientsListWidgetState extends State<_IngredientsListWidget> {
         ],
         border: Border.all(color: Colors.grey.shade100),
       ),
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
+      child: Material(
+        color: Colors.transparent,
+        child: Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
           iconColor: const Color(0xFF1B998B),
           collapsedIconColor: const Color(0xFF1B998B),
           leading: Container(
@@ -523,6 +525,7 @@ class _IngredientsListWidgetState extends State<_IngredientsListWidget> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
