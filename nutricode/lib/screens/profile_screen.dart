@@ -9,9 +9,11 @@ import '../services/auth_service.dart';
 import '../models/user_model.dart';
 import 'allergen_screen.dart';
 import 'history_screen.dart';
+import 'favorites_screen.dart';
 import 'app_settings_screen.dart';
 import 'help_support_screen.dart';
 import '../providers/history_provider.dart';
+import '../providers/favorites_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   final VoidCallback? onGoToScan;
@@ -423,6 +425,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 16),
                   _buildHistoryCard(context),
                   const SizedBox(height: 12),
+                  _buildFavoritesCard(context),
+                  const SizedBox(height: 12),
                   _buildNavCard(
                     context,
                     icon: Icons.settings_suggest_rounded,
@@ -703,6 +707,82 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const Icon(
               Icons.chevron_right,
               color: Color(0xFF1B998B),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFavoritesCard(BuildContext context) {
+    final count = context.watch<FavoritesProvider>().favorites.length;
+    final subtitle = count == 0
+        ? 'No favorites yet'
+        : '$count product${count == 1 ? '' : 's'} saved';
+
+    return GestureDetector(
+      key: const Key('favorites_card'),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => FavoritesScreen(onGoToScan: widget.onGoToScan)),
+      ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.amber.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.favorite_rounded,
+                color: Colors.amber.shade600,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'My Favorites',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2C3E50),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: count > 0
+                          ? Colors.amber.shade700
+                          : Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.amber.shade600,
             ),
           ],
         ),
