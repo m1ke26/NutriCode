@@ -119,10 +119,29 @@ class SearchScreenState extends State<SearchScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // App wordmark
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.eco_rounded, color: Color(0xFF1B998B), size: 22),
+                      const SizedBox(width: 7),
+                      const Text(
+                        'NutriCode',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1B998B),
+                          letterSpacing: 2.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
                   const Text(
                     'Search Products',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w800,
@@ -133,6 +152,7 @@ class SearchScreenState extends State<SearchScreen> {
                   const SizedBox(height: 4),
                   Text(
                     'Find products by name when barcode is unavailable',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[500],

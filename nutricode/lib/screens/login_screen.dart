@@ -343,18 +343,22 @@ class _LoginScreenState extends State<LoginScreen> {
                       "Don't have an account? ",
                       style: TextStyle(color: Colors.grey[400]),
                     ),
-                    GestureDetector(
+                    InkWell(
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (_) => const RegisterScreen()),
                         );
                       },
-                      child: const Text(
-                        'Register',
-                        style: TextStyle(
-                          color: Color(0xFF1B998B),
-                          fontWeight: FontWeight.w600,
+                      borderRadius: BorderRadius.circular(4),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                        child: Text(
+                          'Register',
+                          style: TextStyle(
+                            color: Color(0xFF1B998B),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -622,13 +626,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       'Already have an account? ',
                       style: TextStyle(color: Colors.grey[400]),
                     ),
-                    GestureDetector(
+                    InkWell(
                       onTap: () => Navigator.pop(context),
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(
-                          color: Color(0xFF1B998B),
-                          fontWeight: FontWeight.w600,
+                      borderRadius: BorderRadius.circular(4),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                        child: Text(
+                          'Login',
+                          style: TextStyle(
+                            color: Color(0xFF1B998B),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
