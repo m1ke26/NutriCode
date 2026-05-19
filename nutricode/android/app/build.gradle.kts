@@ -34,11 +34,24 @@ android {
         versionName = flutter.versionName
     }
 
-    buildTypes {
+    
+    signingConfigs {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Looks for environment variables from GitHub Actions, or defaults to blank locally
+            storeFile file(System.getenv("KEYSTORE_PATH") ?: "noop")
+            storePassword System.getenv("KEYSTORE_PASSWORD") ?: ""
+            keyAlias System.getenv("KEY_ALIAS") ?: ""
+            keyPassword System.getenv("KEY_PASSWORD") ?: ""
+        }
+    }
+
+   buildTypes {
+        getByName("release") {
+            // Replace the old debug signing config with your new release setup
+            signingConfig = signingConfigs.getByName("release")
+            
+            minifyEnabled = false
+            shrinkResources = false
         }
     }
 }
