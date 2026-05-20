@@ -27,10 +27,10 @@ class AppPattern {
 // ── 5 patterns ────────────────────────────────────────────────────────
 final List<AppPattern> appPatterns = [
   AppPattern(name: 'Original',    icon: Icons.lens_rounded,           createPainter: () => null),
-  AppPattern(name: 'Marinho',     icon: Icons.waves_rounded,          createPainter: () => _MarinhoPainter()),
-  AppPattern(name: 'Chuva',       icon: Icons.water_drop_rounded,     createPainter: () => _RainPainter()),
-  AppPattern(name: 'Bambu',       icon: Icons.grass_rounded,          createPainter: () => _BambuPainter()),
-  AppPattern(name: 'Constelação', icon: Icons.auto_awesome_rounded,   createPainter: () => _ConstellationPainter()),
+  AppPattern(name: 'Marine',      icon: Icons.waves_rounded,          createPainter: () => _MarinePainter()),
+  AppPattern(name: 'Rain',        icon: Icons.water_drop_rounded,     createPainter: () => _RainPainter()),
+  AppPattern(name: 'Bamboo',      icon: Icons.grass_rounded,          createPainter: () => _BambooPainter()),
+  AppPattern(name: 'Constellation', icon: Icons.auto_awesome_rounded,   createPainter: () => _ConstellationPainter()),
 ];
 
 // ── Helper widget: apply gradient + optional pattern ──────────────────
@@ -77,8 +77,8 @@ class PatternSurface extends StatelessWidget {
 // Painters
 // ══════════════════════════════════════════════════════════════════════
 
-// ── 1. Marinho — waves, fish, bubbles & seaweed ───────────────────────
-class _MarinhoPainter extends CustomPainter {
+// ── 1. Marine — waves, fish, bubbles & seaweed ───────────────────────
+class _MarinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rng = Random(17);
@@ -288,8 +288,8 @@ class _RainPainter extends CustomPainter {
   bool shouldRepaint(_) => false;
 }
 
-// ── 3. Bambu — dense bamboo forest with sprouting leaves ──────────────
-class _BambuPainter extends CustomPainter {
+// ── 3. Bamboo — dense bamboo forest with sprouting leaves ──────────────
+class _BambooPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rng = Random(42);
