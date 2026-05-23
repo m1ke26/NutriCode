@@ -4,6 +4,15 @@ All notable changes to NutriCode will be documented in this file.
 
 ---
 
+## [Sprint 3] - 11/05/2026 to 25/05/2026
+
+### Added
+- **Save Favourite Products (T2#8)** — Users can now bookmark their favourite products, making them easily accessible in a dedicated favorites screen.
+- **Scan History (T2#6)** — A new history log automatically saves previously scanned products, allowing users to quickly review products they have analyzed in the past.
+- **App Settings and Help & Support (T2#28)** — Added a comprehensive settings menu along with a Help & Support section to assist users with app functionality and account management.
+
+---
+
 ## [Sprint 2] - 20/04/2026 to 11/05/2026
 
 ### Added
