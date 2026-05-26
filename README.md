@@ -521,7 +521,7 @@ Some screenshots and demos:
 - **Puzzles:**
   - Data Coverage : How do we handle products with incomplete ingredient data? Vegan and allergen flags depend entirely on data quality from the barcode DB.
 
-**Board at the End of Iterartion 3**
+**Board at the End of Iteration 3**
 
 <p align="center">
    <img src="docs/iteration_3.png" width="800">
@@ -531,7 +531,7 @@ Some screenshots and demos:
 
 <p align="center">
  <a href = "https://docs.google.com/spreadsheets/d/17iqaxd9qd0qyLcawZMr39omtdHEmESZSxWKuVbeW7mc/edit?gid=1568708529#gid=1568708529">
-   <img src="happiness_sprint_3.png" width="800">
+   <img src="docs/happiness_sprint_3.png" width="800">
  </a>
 </p>
 
