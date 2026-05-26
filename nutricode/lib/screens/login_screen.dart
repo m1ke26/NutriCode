@@ -545,7 +545,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 _buildTextField(
                   controller: _nameController,
-                  hint: 'Full Name',
+                  hint: 'Username',
                   icon: Icons.person_outline,
                 ),
 
