@@ -536,3 +536,35 @@ Some screenshots and demos:
 </p>
 
 ### Final Release
+
+<p align="center">
+  <b>1. Welcome Screen</b>&emsp;&emsp;&emsp;
+  <b>2. Scan Screen</b>&emsp;&emsp;&emsp;
+  <b>3. Verdict Screen</b>
+</p>
+<p align="center">
+  <img src="docs/final_release_images/home.jpg" width="200">&emsp;
+  <img src="docs/final_release_images/scanner.jpg" width="200">&emsp;
+  <img src="docs/final_release_images/verdict.jpg" width="200">
+</p>
+
+<p align="center">
+  <b>4. Product Screen</b>&emsp;&emsp;&emsp;
+  <b>5. Product Details Screen</b>&emsp;&emsp;&emsp;
+  <b>6. Search Product Screen</b
+</p>
+<p align="center">
+  <img src="docs/final_release_images/product.jpg" width="200">&emsp;
+  <img src="docs/final_release_images/product_details.jpg" width="200">&emsp;
+  <img src="docs/final_release_images/search.jpg" width="200">
+</p>
+
+<p align="center">
+  <b>7. Profile Screen</b>&emsp;&emsp;&emsp;
+  <b>8. Tutorial Screen</b>
+
+</p>
+<p align="center">
+  <img src="docs/final_release_images/user.jpg" width="200">&emsp;
+  <img src="docs/final_release_images/tutorial.jpg" width="200">
+</p>
