@@ -511,6 +511,16 @@ Some screenshots and demos:
 
 **Retrospective**
 
+- **Did well:**
+  - Delivery: Shipped both Favorites and Vegan Mode within the final sprint scope, completing the full feature roadmap.
+  - Product Vision : Every planned feature from the original vision document was implemented by end of final sprint.
+
+- **Do differently:**
+  - Define acceptance criteria for Vegan Mode earlier — the boundary between "vegan flag" and ingredient analysis caused late rework.
+
+- **Puzzles:**
+  - Data Coverage : How do we handle products with incomplete ingredient data? Vegan and allergen flags depend entirely on data quality from the barcode DB.
+
 **Board at the End of Iterartion 3**
 
 <p align="center">
