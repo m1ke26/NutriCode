@@ -470,7 +470,9 @@ Some screenshots and demos:
 **Happiness Meter**
 
 <p align="center">
+ <a href = "https://docs.google.com/spreadsheets/d/17iqaxd9qd0qyLcawZMr39omtdHEmESZSxWKuVbeW7mc/edit?gid=1568708529#gid=1568708529">
   <img src="docs/happiness_meters.png" width="800">
+ </a>
 </p>
 
 ### Sprint 2
@@ -498,13 +500,39 @@ Some screenshots and demos:
 **Happiness Meter**
 
 <p align="center">
+ <a href = "https://docs.google.com/spreadsheets/d/17iqaxd9qd0qyLcawZMr39omtdHEmESZSxWKuVbeW7mc/edit?gid=1568708529#gid=1568708529">
   <img src="docs/happiness_sprint_2.png" width="800">
+  </a>
 </p>
 
 
 
 ### Sprint 3
 
-### Sprint 4
+**Retrospective**
+
+- **Did well:**
+  - Delivery: Shipped both Favorites and Vegan Mode within the final sprint scope, completing the full feature roadmap.
+  - Product Vision : Every planned feature from the original vision document was implemented by end of final sprint.
+
+- **Do differently:**
+  - Define acceptance criteria for Vegan Mode earlier — the boundary between "vegan flag" and ingredient analysis caused late rework.
+
+- **Puzzles:**
+  - Data Coverage : How do we handle products with incomplete ingredient data? Vegan and allergen flags depend entirely on data quality from the barcode DB.
+
+**Board at the End of Iterartion 3**
+
+<p align="center">
+   <img src="docs/iteration_3.png" width="800">
+</p>
+
+**Happiness Meter**
+
+<p align="center">
+ <a href = "https://docs.google.com/spreadsheets/d/17iqaxd9qd0qyLcawZMr39omtdHEmESZSxWKuVbeW7mc/edit?gid=1568708529#gid=1568708529">
+   <img src="happiness_sprint_3.png" width="800">
+ </a>
+</p>
 
 ### Final Release
