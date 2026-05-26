@@ -470,7 +470,9 @@ Some screenshots and demos:
 **Happiness Meter**
 
 <p align="center">
+ <a href = "https://docs.google.com/spreadsheets/d/17iqaxd9qd0qyLcawZMr39omtdHEmESZSxWKuVbeW7mc/edit?gid=1568708529#gid=1568708529">
   <img src="docs/happiness_meters.png" width="800">
+ </a>
 </p>
 
 ### Sprint 2
@@ -498,13 +500,29 @@ Some screenshots and demos:
 **Happiness Meter**
 
 <p align="center">
+ <a href = "https://docs.google.com/spreadsheets/d/17iqaxd9qd0qyLcawZMr39omtdHEmESZSxWKuVbeW7mc/edit?gid=1568708529#gid=1568708529">
   <img src="docs/happiness_sprint_2.png" width="800">
+  </a>
 </p>
 
 
 
 ### Sprint 3
 
-### Sprint 4
+**Retrospective**
+
+**Board at the End of Iterartion 3**
+
+<p align="center">
+   <img src="docs/iteration_3.png" width="800">
+</p>
+
+**Happiness Meter**
+
+<p align="center">
+ <a href = "https://docs.google.com/spreadsheets/d/17iqaxd9qd0qyLcawZMr39omtdHEmESZSxWKuVbeW7mc/edit?gid=1568708529#gid=1568708529">
+   <img src="happiness_sprint_3.png" width="800">
+ </a>
+</p>
 
 ### Final Release
