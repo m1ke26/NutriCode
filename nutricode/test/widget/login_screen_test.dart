@@ -76,7 +76,7 @@ void main() {
       // Verify RegisterScreen renders
       expect(find.text('Create Account'), findsOneWidget);
       expect(find.text('Join NutriCode today'), findsOneWidget);
-      expect(find.widgetWithText(TextField, 'Full Name'), findsOneWidget);
+      expect(find.widgetWithText(TextField, 'Username'), findsOneWidget);
       expect(find.widgetWithText(TextField, 'Email'), findsOneWidget);
       expect(find.widgetWithText(TextField, 'Password'), findsOneWidget);
       expect(find.widgetWithText(TextField, 'Confirm Password'), findsOneWidget);
