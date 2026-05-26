@@ -90,7 +90,7 @@ void main() {
       expect(find.text('Please fill in all fields'), findsOneWidget);
 
       // Enter mismatched passwords
-      final nameField = find.widgetWithText(TextField, 'Full Name');
+      final nameField = find.widgetWithText(TextField, 'Username');
       await tester.ensureVisible(nameField);
       await tester.enterText(nameField, 'John Doe');
 
