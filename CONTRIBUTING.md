@@ -83,7 +83,6 @@ Maintainers:
 | :--- | :--- | :--- |
 | **José Maio** | `up202404872` | [up202404872@up.pt](mailto:up202404872@up.pt) |
 | **Miguel Mimoso** | `up202407610` | [up202407610@up.pt](mailto:up202407610@up.pt) |
-| **Rodrigo Pina** | `up202404436` | [up202404436@up.pt](mailto:up202404436@up.pt) |
 | **Vasco Guimarães** | `up202403604` | [up202403604@up.pt](mailto:up202403604@up.pt) |
 | **Victor Gomez** | `up202406138` | [up202406138@up.pt](mailto:up202406138@up.pt) |
 
